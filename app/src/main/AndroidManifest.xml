@@ -39,7 +39,11 @@
             android:name=".latin.settings.SettingsActivity"
             android:exported="true"
             android:label="@string/english_ime_name"
-            android:theme="@style/platformSettingsTheme">
+            android:theme="@style/platformSettingsTheme"
+            android:parentActivityName="Scrambler.ScramblerMainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="Scrambler.ScramblerMainActivity" />
         </activity>
             
         <receiver
