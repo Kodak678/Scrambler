@@ -7,13 +7,14 @@
         android:allowBackup="true"
         android:fullBackupOnly="true"
         android:icon="@mipmap/ic_launcher"
-        android:label="Scrambler"
-        android:supportsRtl="true" >
+        android:label="@string/english_ime_name"
+        android:supportsRtl="true">
+        
         <activity
             android:name="Scrambler.ScramblerMainActivity"
             android:exported="true"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar">
-            <intent-filter>
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"> 
+                  <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
@@ -39,8 +40,12 @@
             android:exported="true"
             android:label="@string/english_ime_name"
             android:theme="@style/platformSettingsTheme"
-            />
-
+            android:parentActivityName="Scrambler.ScramblerMainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="Scrambler.ScramblerMainActivity" />
+        </activity>
+            
         <receiver
             android:name=".latin.SystemBroadcastReceiver"
             android:exported="false">
@@ -48,6 +53,7 @@
                 <action android:name="android.intent.action.LOCALE_CHANGED" />
             </intent-filter>
         </receiver>
+        
     </application>
 
 </manifest>

@@ -3,6 +3,7 @@ package Scrambler;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Button;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -18,19 +19,20 @@ public class ScramblerMainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
-        setContentView(R.layout.activity_scrambler);
+        setContentView(R.layout.activity_scrambler_main);
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
-    }
 
-    public void launchKeyboardSettings(View v) {
-        // This method is an event handler for clicking on the keyboard settings button
-        // It reroutes to the Simple Keyboard's original settings page
-        Intent i = new Intent(this, rkr.simplekeyboard.inputmethod.latin.settings.SettingsActivity.class);
-        startActivity(i);
+        Button openSettingsButton = findViewById(R.id.open_settings_button);
+        openSettingsButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(ScramblerMainActivity.this, rkr.simplekeyboard.inputmethod.latin.settings.SettingsActivity.class);
+                startActivity(intent);
+            }
+        });
     }
-
 }
