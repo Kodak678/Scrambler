@@ -54,6 +54,10 @@ public final class KeyboardCodesSet {
         "key_left",
         "key_right",
         "key_unspecified",
+/* key_encrypt */ "key_encrypt",  
+/* key_decrypt */ "key_decrypt",   
+/* key_sign */ "key_sign",  
+/* key_verify */ "key_verify",
     };
 
     private static final int[] DEFAULT = {
@@ -70,7 +74,13 @@ public final class KeyboardCodesSet {
         Constants.CODE_ACTION_PREVIOUS,
         Constants.CODE_SHIFT_ENTER,
         Constants.CODE_LANGUAGE_SWITCH,
+        Constants.CODE_UNSPECIFIED, // placeholder to keep arrays aligned
+        Constants.CODE_UNSPECIFIED, // placeholder to keep arrays aligned
         Constants.CODE_UNSPECIFIED,
+    /* key_encrypt */ Constants.CODE_ENCRYPT,  
+    /* key_decrypt */ Constants.CODE_DECRYPT,  
+    /* key_sign */ Constants.CODE_SIGN,  
+    /* key_verify */ Constants.CODE_VERIFY,
     };
 
     static {

@@ -39,7 +39,7 @@ import rkr.simplekeyboard.inputmethod.latin.settings.SettingsValues;
 import rkr.simplekeyboard.inputmethod.latin.utils.InputTypeUtils;
 import rkr.simplekeyboard.inputmethod.latin.utils.RecapitalizeStatus;
 import rkr.simplekeyboard.inputmethod.latin.utils.SubtypeLocaleUtils;
-
+import Scrambler.ScramblerMainActivity;
 /**
  * This class manages the input logic.
  */
@@ -214,6 +214,20 @@ public final class InputLogic {
             case Constants.CODE_SHIFT_ENTER:
                 sendDownUpKeyEvent(KeyEvent.KEYCODE_ENTER, KeyEvent.META_SHIFT_ON);
                 // Shift + Enter is not supported in all devices
+                break;
+
+//            Custom cryptographic function keys
+            case Constants.CODE_ENCRYPT:
+                ScramblerMainActivity.onEncryptPressed();
+                break;
+            case Constants.CODE_DECRYPT:
+                ScramblerMainActivity.onDecryptPressed();
+                break;
+            case Constants.CODE_SIGN:
+                ScramblerMainActivity.onSignPressed();
+                break;
+            case Constants.CODE_VERIFY:
+                ScramblerMainActivity.onVerifyPressed();
                 break;
             default:
                 throw new RuntimeException("Unknown key code : " + event.mKeyCode);

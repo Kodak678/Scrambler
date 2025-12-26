@@ -232,6 +232,11 @@ public final class KeyboardTextsTable {
         /* 164: 0 */ "morekeys_tablet_double_quote",
         /* 165: 0 */ "morekeys_cyrillic_ya",
         /* 166: 0 */ "morekeys_cyrillic_yu",
+        /* 167: 0 */ "morekeys_crypto",
+        /* 168: 0 */ "keylabel_encrypt",  
+        /* 168: 0 */ "keylabel_decrypt",   
+        /* 169: 0 */ "keylabel_sign",  
+        /* 170: 0 */ "keylabel_verify",
     };
 
     private static final String EMPTY = "";
@@ -445,6 +450,11 @@ public final class KeyboardTextsTable {
         /* morekeys_tablet_double_quote */ "!fixedColumnOrder!6,!text/double_quotes,!text/single_quotes,!text/double_angle_quotes,!text/single_angle_quotes",
         /* morekeys_cyrillic_ya */ EMPTY,
         /* morekeys_cyrillic_yu */ EMPTY,
+        /* morekeys_crypto */ "!text/keylabel_encrypt|!code/key_encrypt,!text/keylabel_decrypt|!code/key_decrypt,!text/keylabel_sign|!code/key_sign,!text/keylabel_verify|!code/key_verify",
+        /* keylabel_encrypt */ "Encrypt",  
+        /* keylabel_decrypt */ "Decrypt",   
+        /* keylabel_sign */ "Sign",  
+        /* keylabel_verify */ "Verify",
     };
 
     /* Locale af: Afrikaans */
