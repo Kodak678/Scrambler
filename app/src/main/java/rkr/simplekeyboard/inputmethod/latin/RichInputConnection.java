@@ -255,6 +255,17 @@ public final class RichInputConnection {
         return mTextSelection;
     }
 
+    /**
+     * Returns the cached committed text immediately preceding the cursor.
+        I need access to this method in InputLogic.java
+        so that I can perform my encryption/decryption operations
+        on the text before the cursor.
+        This is used when there is no selection.
+     */
+    public String getTextBeforeCursorCached() {
+        return mTextBeforeCursor;
+    }
+
     public boolean canDeleteCharacters() {
         return mExpectedSelStart > 0;
     }
@@ -339,10 +350,11 @@ public final class RichInputConnection {
         }
 
         beginBatchEdit();
-        final int selectionLength = mExpectedSelEnd - mExpectedSelStart;
+        // Replace the selected text with an empty string
+        mIC.setSelection(mExpectedSelStart, mExpectedSelEnd); // Ensure selection is set
+        mIC.commitText("", 1); // This deletes the selection
         mTextSelection = "";
-        setSelection(mExpectedSelStart, mExpectedSelStart);
-        mIC.deleteSurroundingText(0, selectionLength);
+        mExpectedSelEnd = mExpectedSelStart; // Collapse selection
         endBatchEdit();
     }
 

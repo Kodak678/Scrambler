@@ -13,6 +13,7 @@ import androidx.core.view.WindowInsetsCompat;
 import android.util.Log;
 
 import rkr.simplekeyboard.inputmethod.R;
+import rkr.simplekeyboard.inputmethod.latin.inputlogic.InputLogic.CryptoType;
 
 public class ScramblerMainActivity extends AppCompatActivity {
 
@@ -38,20 +39,30 @@ public class ScramblerMainActivity extends AppCompatActivity {
 
         
     }
-    // Basic handlers for scrambler keys (temporary - print to console)
-    public static void onEncryptPressed() {
-        Log.i("ScramblerMainActivity", "encrypt");
-    }
-
-    public static void onDecryptPressed() {
-        Log.i("ScramblerMainActivity", "decrypt");
-    }
-
-    public static void onSignPressed() {
-        Log.i("ScramblerMainActivity", "sign");
-    }
-
-    public static void onVerifyPressed() {
-        Log.i("ScramblerMainActivity", "verify");
+    
+    public static String processText(String inputText, CryptoType cryptoType) {
+        
+        if (cryptoType == CryptoType.ENCRYPT) 
+        {
+            return "[Encrypted]";
+        } 
+        else if (cryptoType == CryptoType.DECRYPT) 
+        {
+            return "[Decrypted]";
+        } 
+        else if (cryptoType == CryptoType.SIGN) 
+        {
+            return "[Signed]";
+        } 
+        else if (cryptoType == CryptoType.VERIFY) 
+        {
+            return "[Verified]";
+        } 
+        else 
+        {   
+            // Should never reach here. This is just so the method always returns the expected type
+            Log.e("ScramblerMainActivity", "Unknown CryptoType: " + cryptoType);
+            return inputText; 
+        }
     }
 }

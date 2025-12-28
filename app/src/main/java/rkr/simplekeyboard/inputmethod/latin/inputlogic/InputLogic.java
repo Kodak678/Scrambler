@@ -51,6 +51,13 @@ public final class InputLogic {
     public final RichInputConnection mConnection;
     private final RecapitalizeStatus mRecapitalizeStatus = new RecapitalizeStatus();
 
+    public static enum CryptoType {
+        ENCRYPT,
+        DECRYPT,
+        SIGN,
+        VERIFY
+    }
+
     /**
      * Create a new instance of the input logic.
      * @param latinIME the instance of the parent LatinIME. We should remove this when we can.
@@ -218,20 +225,61 @@ public final class InputLogic {
 
 //            Custom cryptographic function keys
             case Constants.CODE_ENCRYPT:
-                ScramblerMainActivity.onEncryptPressed();
+                handleCryptoTransformation(CryptoType.ENCRYPT);
                 break;
             case Constants.CODE_DECRYPT:
-                ScramblerMainActivity.onDecryptPressed();
+                handleCryptoTransformation(CryptoType.DECRYPT);
                 break;
             case Constants.CODE_SIGN:
-                ScramblerMainActivity.onSignPressed();
+                handleCryptoTransformation(CryptoType.SIGN);
                 break;
             case Constants.CODE_VERIFY:
-                ScramblerMainActivity.onVerifyPressed();
+                handleCryptoTransformation(CryptoType.VERIFY);
                 break;
             default:
                 throw new RuntimeException("Unknown key code : " + event.mKeyCode);
         }
+    }
+
+    // This function handles cryptographic transformations by interacting with the ScramblerMainActivity.
+    //  *
+    //  * @param cryptoType The type of cryptographic operation to perform (encrypt, decrypt, sign, verify).
+    //  */
+
+    private void handleCryptoTransformation(CryptoType cryptoType) {
+        
+        // Reload the text cache to ensure we have the latest text from the editor.
+        mConnection.reloadTextCache();
+
+        String currentText = "";
+        if (mConnection.hasSelection()) {
+            currentText = mConnection.getSelectedText().toString();
+        } else {
+            // making use of the new public accessor instead of touching private fields.
+            currentText = mConnection.getTextBeforeCursorCached();
+        }
+
+        final String modifiedText = ScramblerMainActivity.processText(currentText, cryptoType);
+
+        mConnection.beginBatchEdit();
+        if (mConnection.hasSelection()) {
+            // Replace the selected text: delete it, then commit the modified text.
+            mConnection.deleteSelectedText();
+            mConnection.commitText(modifiedText, 0);
+        } else {
+            // No selection: replace the text before the cursor by deleting it and
+            // committing the modified text
+            // This section essentially deletes the number of characters equal to the length of currentText
+            // this process can be likened to pressing backspace multiple times before typing in the new text.
+            // There might be a more efficient way to do this but i have not found it yet.
+            // This does work correctly for now.
+            final int numCharsToDelete = (currentText == null) ? 0 : currentText.length();
+            if (numCharsToDelete > 0) {
+                mConnection.deleteTextBeforeCursor(numCharsToDelete);
+            }
+            mConnection.commitText(modifiedText, 1);
+        }
+        mConnection.endBatchEdit();
     }
 
     /**
