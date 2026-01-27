@@ -49,7 +49,6 @@
             <Key
                 latin:keySpec="!text/keyspec_comma"
                 latin:keyLabelFlags="hasPopupHint"
-                latin:moreKeys="!text/morekeys_crypto"
                 latin:keyStyle="settingsMoreKeysStyle" />
         </default>
     </switch>
