@@ -110,6 +110,8 @@ public final class Constants {
 
     public static final int CODE_VERIFY = -17;
 
+    public static final int CODE_CRYPTO = -18;
+
     // Code value representing the code is not specified.
     public static final int CODE_UNSPECIFIED = -13;
 
@@ -133,6 +135,7 @@ public final class Constants {
         case CODE_TAB: return "tab";
         case CODE_ENTER: return "enter";
         case CODE_SPACE: return "space";
+        case CODE_CRYPTO: return "crypto";
         default:
             if (code < CODE_SPACE) return String.format("\\u%02X", code);
             if (code < 0x100) return String.format("%c", code);

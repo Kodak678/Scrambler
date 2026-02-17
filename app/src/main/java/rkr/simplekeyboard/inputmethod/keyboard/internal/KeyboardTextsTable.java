@@ -455,6 +455,7 @@ public final class KeyboardTextsTable {
         /* keylabel_decrypt */ "Decrypt",   
         /* keylabel_sign */ "Sign",  
         /* keylabel_verify */ "Verify",
+        /* keylabel_crypto */ "Crypto",
     };
 
     /* Locale af: Afrikaans */
