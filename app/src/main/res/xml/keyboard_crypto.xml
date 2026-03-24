@@ -1,0 +1,32 @@
+
+<Keyboard
+    xmlns:latin="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    latin:keyWidth="26.67%p"
+>
+    <Row>
+         <Key
+            latin:keyWidth="25%p"
+            latin:keySpec="!text/keylabel_encrypt|!code/key_encrypt"
+      />
+         <Key
+            latin:keyWidth="25%p"
+            latin:keySpec="!text/keylabel_decrypt|!code/key_decrypt"
+      />
+         <Key
+            latin:keyWidth="25%p"
+            latin:keySpec="!text/keylabel_sign|!code/key_sign"
+      />
+         <Key
+            latin:keyWidth="25%p"
+            latin:keySpec="!text/keylabel_verify|!code/key_verify"
+      />
+    </Row>
+    <Row>
+         <Key
+            latin:keyWidth="25%p"
+            latin:keySpec="!text/keylabel_abc|!code/key_abc"
+      />
+    </Row>
+</Keyboard>
+

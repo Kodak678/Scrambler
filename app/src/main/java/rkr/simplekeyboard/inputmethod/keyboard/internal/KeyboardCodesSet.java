@@ -59,6 +59,7 @@ public final class KeyboardCodesSet {
         /* key_sign */ "key_sign",  
         /* key_verify */ "key_verify",
         /* key_crypto */ "key_crypto",
+        /* key_abc */ "key_abc",
     };
 
     private static final int[] DEFAULT = {
@@ -83,6 +84,7 @@ public final class KeyboardCodesSet {
         /* key_sign */ Constants.CODE_SIGN,  
         /* key_verify */ Constants.CODE_VERIFY,
         /* key_crypto */ Constants.CODE_CRYPTO,
+        /* key_abc */ Constants.CODE_ABC,
     };
 
     static {

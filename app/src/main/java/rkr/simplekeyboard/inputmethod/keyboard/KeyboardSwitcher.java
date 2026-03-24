@@ -204,6 +204,15 @@ public final class KeyboardSwitcher implements KeyboardState.SwitchActions {
 
     // Implements {@link KeyboardState.SwitchActions}.
     @Override
+    public void setCryptoKeyboard() {
+        if (DEBUG_ACTION) {
+            Log.d(TAG, "setCryptoKeyboard");
+        }
+        setKeyboard(KeyboardId.ELEMENT_CRYPTO, KeyboardSwitchState.OTHER); 
+    }
+
+    // Implements {@link KeyboardState.SwitchActions}.
+    @Override
     public void setAlphabetManualShiftedKeyboard() {
         if (DEBUG_ACTION) {
             Log.d(TAG, "setAlphabetManualShiftedKeyboard");

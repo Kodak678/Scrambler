@@ -52,6 +52,7 @@ public final class KeyboardState {
         void setAlphabetShiftLockedKeyboard();
         void setSymbolsKeyboard();
         void setSymbolsShiftedKeyboard();
+        void setCryptoKeyboard();
 
         /**
          * Request to call back {@link KeyboardState#onUpdateShiftState(int, int)}.
@@ -274,7 +275,7 @@ public final class KeyboardState {
             // Nothing to do here. See {@link #onReleaseKey(int,boolean)}.
         } else if (code == Constants.CODE_SWITCH_ALPHA_SYMBOL) {
             onPressSymbol(autoCapsFlags, recapitalizeMode);
-        } else {
+                } else {
             mShiftKeyState.onOtherKeyPressed();
             mSymbolKeyState.onOtherKeyPressed();
             // It is required to reset the auto caps state when all of the following conditions
@@ -310,7 +311,7 @@ public final class KeyboardState {
             setShiftLocked(!mAlphabetShiftState.isShiftLocked());
         } else if (code == Constants.CODE_SWITCH_ALPHA_SYMBOL) {
             onReleaseSymbol(withSliding, autoCapsFlags, recapitalizeMode);
-        }
+                }
     }
 
     private void onPressSymbol(final int autoCapsFlags,

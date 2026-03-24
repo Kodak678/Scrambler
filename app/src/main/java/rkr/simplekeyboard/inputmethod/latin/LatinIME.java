@@ -949,4 +949,18 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
             }
         }
     }
+
+    // Public method to switch to the crypto keyboard
+    // This was necessary as the crypto key press was 
+    // not being detected in onPressKey detection in KeyboardState
+    public void switchToCryptoKeyboard() {
+        mKeyboardSwitcher.setCryptoKeyboard();
+    }
+
+    // Public method to switch to the alpha keyboard
+    // This was necessary as the alpha key press was 
+    // not being detected in onPressKey detection in KeyboardState
+    public void switchToAlphaKeyboard() {
+        mKeyboardSwitcher.setAlphabetKeyboard();
+    }
 }

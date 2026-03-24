@@ -27,7 +27,7 @@
             >
             <key-style
                 latin:styleName="settingsMoreKeysStyle"
-                latin:additionalMoreKeys="!text/morekeys_crypto"
+                latin:keySpec="!text/keylabel_crypto|!code/key_crypto"
                 latin:backgroundType="functional" />
         </case>
         <!-- clobberSettingsKey="false" -->
@@ -35,7 +35,7 @@
             <key-style
                 latin:styleName="settingsMoreKeysStyle"
                 latin:keyLabelFlags="hasPopupHint"
-                latin:additionalMoreKeys="!text/keyspec_settings,!text/morekeys_crypto"
+                latin:additionalMoreKeys="!text/keyspec_settings,!text/keylabel_crypto|!code/key_crypto"
                 latin:backgroundType="functional" />
         </default>
     </switch>

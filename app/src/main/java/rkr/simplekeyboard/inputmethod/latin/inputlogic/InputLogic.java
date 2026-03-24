@@ -40,6 +40,8 @@ import rkr.simplekeyboard.inputmethod.latin.utils.InputTypeUtils;
 import rkr.simplekeyboard.inputmethod.latin.utils.RecapitalizeStatus;
 import rkr.simplekeyboard.inputmethod.latin.utils.SubtypeLocaleUtils;
 import Scrambler.ScramblerMainActivity;
+
+import android.util.Log;
 /**
  * This class manages the input logic.
  */
@@ -235,6 +237,16 @@ public final class InputLogic {
                 break;
             case Constants.CODE_VERIFY:
                 handleCryptoTransformation(CryptoType.VERIFY);
+                break;
+            case Constants.CODE_CRYPTO:
+                // Switch to the crypto keyboard layout
+                Log.d("InputLogic", "Switching to crypto layout");
+                mLatinIME.switchToCryptoKeyboard();
+                break;
+            case Constants.CODE_ABC:
+                // Switch to the alpha keyboard layout
+                Log.d("InputLogic", "Switching to alpha layout");
+                mLatinIME.switchToAlphaKeyboard();
                 break;
             default:
                 throw new RuntimeException("Unknown key code : " + event.mKeyCode);

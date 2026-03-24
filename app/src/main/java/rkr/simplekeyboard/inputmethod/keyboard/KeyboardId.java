@@ -42,7 +42,7 @@ public final class KeyboardId {
     public static final int MODE_DATE = 6;
     public static final int MODE_TIME = 7;
     public static final int MODE_DATETIME = 8;
-
+    
     public static final int ELEMENT_ALPHABET = 0;
     public static final int ELEMENT_ALPHABET_MANUAL_SHIFTED = 1;
     public static final int ELEMENT_ALPHABET_AUTOMATIC_SHIFTED = 2;
@@ -52,6 +52,9 @@ public final class KeyboardId {
     public static final int ELEMENT_PHONE = 7;
     public static final int ELEMENT_PHONE_SYMBOLS = 8;
     public static final int ELEMENT_NUMBER = 9;
+
+    // Custom Crypto Layout
+    public static final int ELEMENT_CRYPTO = 10;
 
     public final Subtype mSubtype;
     public final int mThemeId;
@@ -212,6 +215,7 @@ public final class KeyboardId {
         case ELEMENT_PHONE: return "phone";
         case ELEMENT_PHONE_SYMBOLS: return "phoneSymbols";
         case ELEMENT_NUMBER: return "number";
+        case ELEMENT_CRYPTO: return "crypto";
         default: return null;
         }
     }
