@@ -42,6 +42,10 @@ import rkr.simplekeyboard.inputmethod.latin.utils.SubtypeLocaleUtils;
 import Scrambler.ScramblerMainActivity;
 
 import android.util.Log;
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
+
 /**
  * This class manages the input logic.
  */
@@ -260,38 +264,51 @@ public final class InputLogic {
 
     private void handleCryptoTransformation(CryptoType cryptoType) {
         
-        // Reload the text cache to ensure we have the latest text from the editor.
-        mConnection.reloadTextCache();
+        
+        if (cryptoType != CryptoType.DECRYPT) {
 
-        String currentText = "";
-        if (mConnection.hasSelection()) {
-            currentText = mConnection.getSelectedText().toString();
-        } else {
-            // making use of the new public accessor instead of touching private fields.
-            currentText = mConnection.getTextBeforeCursorCached();
-        }
-
-        final String modifiedText = ScramblerMainActivity.processText(currentText, cryptoType);
-
-        mConnection.beginBatchEdit();
-        if (mConnection.hasSelection()) {
-            // Replace the selected text: delete it, then commit the modified text.
-            mConnection.deleteSelectedText();
-            mConnection.commitText(modifiedText, 0);
-        } else {
-            // No selection: replace the text before the cursor by deleting it and
-            // committing the modified text
-            // This section essentially deletes the number of characters equal to the length of currentText
-            // this process can be likened to pressing backspace multiple times before typing in the new text.
-            // There might be a more efficient way to do this but i have not found it yet.
-            // This does work correctly for now.
-            final int numCharsToDelete = (currentText == null) ? 0 : currentText.length();
-            if (numCharsToDelete > 0) {
-                mConnection.deleteTextBeforeCursor(numCharsToDelete);
+            // Reload the text cache to ensure we have the latest text from the editor.
+            mConnection.reloadTextCache();
+    
+            String currentText = "";
+            if (mConnection.hasSelection()) {
+                currentText = mConnection.getSelectedText().toString();
+            } else {
+                // making use of the new public accessor instead of touching private fields.
+                currentText = mConnection.getTextBeforeCursorCached();
             }
-            mConnection.commitText(modifiedText, 1);
+    
+            final String modifiedText = ScramblerMainActivity.processText(currentText, cryptoType);
+
+            mConnection.beginBatchEdit();
+            if (mConnection.hasSelection()) {
+                // Replace the selected text: delete it, then commit the modified text.
+                mConnection.deleteSelectedText();
+                mConnection.commitText(modifiedText, 0);
+            } else {
+                // No selection: replace the text before the cursor by deleting it and
+                // committing the modified text
+                // This section essentially deletes the number of characters equal to the length of currentText
+                // this process can be likened to pressing backspace multiple times before typing in the new text.
+                // There might be a more efficient way to do this but i have not found it yet.
+                // This does work correctly for now.
+                final int numCharsToDelete = (currentText == null) ? 0 : currentText.length();
+                if (numCharsToDelete > 0) {
+                    mConnection.deleteTextBeforeCursor(numCharsToDelete);
+                }
+                mConnection.commitText(modifiedText, 1);
+            }
+            mConnection.endBatchEdit();
         }
-        mConnection.endBatchEdit();
+        if (cryptoType == CryptoType.DECRYPT) {
+            String clipboardText = getClipboardText();
+            if (clipboardText != null) {
+
+                String decryptedText = ScramblerMainActivity.processText(clipboardText, cryptoType);
+                Log.d("InputLogic", "Decrypted clipboard text: " + decryptedText);
+               
+            }
+        }
     }
 
     /**
@@ -600,4 +617,38 @@ public final class InputLogic {
 
         mConnection.commitText(StringUtils.newSingleCodePointString(codePoint), 1);
     }
+
+
+// A method for getting the current text from the clipboard, 
+// which will be used for cryptographic transformations in the ScramblerMainActivity.
+// This method retrieves the text from the clipboard and logs it for debugging purposes.
+public String getClipboardText() {
+    // Get the ClipboardManager service using the context of the LatinIME
+    // as this is where we are currently operating and it allows us to access the clipboard.
+    ClipboardManager clipboard = (ClipboardManager) mLatinIME.getSystemService(Context.CLIPBOARD_SERVICE);
+
+    // Checking if the clipboard contains any data
+    if (clipboard != null && clipboard.hasPrimaryClip()) {
+        
+        // Retrieve the primary clip (the most recent copied item)
+        ClipData clipData = clipboard.getPrimaryClip();
+
+        // Ensure the clip has at least one item and that it is text
+        // ScramblerMainActivity.processText will only work with text in base64 format,, 
+        // so we need to make sure we have text before trying to process it.
+        if (clipData != null && clipData.getItemCount() > 0) {
+            ClipData.Item item = clipData.getItemAt(0);
+            CharSequence text = item.getText();
+
+            if (text != null) {
+                // Log.d("Clipboard", text.toString());
+                return text.toString();
+            }
+        }
+    }
+    // Log.d("Clipboard", "No text found in clipboard"); 
+    return null; // Return null if no text is found
+}
+
+
 }

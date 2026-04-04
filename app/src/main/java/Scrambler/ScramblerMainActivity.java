@@ -48,7 +48,7 @@ public class ScramblerMainActivity extends AppCompatActivity {
         } 
         else if (cryptoType == CryptoType.DECRYPT) 
         {
-            return "[Decrypted]";
+            return "[Decrypted]" + inputText + "[Decrypted]"; 
         } 
         else if (cryptoType == CryptoType.SIGN) 
         {
