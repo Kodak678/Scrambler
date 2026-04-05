@@ -305,7 +305,8 @@ public final class InputLogic {
             if (clipboardText != null) {
 
                 String decryptedText = ScramblerMainActivity.processText(clipboardText, cryptoType);
-                Log.d("InputLogic", "Decrypted clipboard text: " + decryptedText);
+                // Log.d("InputLogic", "Decrypted clipboard text: " + decryptedText);
+                mLatinIME.showPopup(decryptedText);
                
             }
         }

@@ -39,19 +39,30 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.util.PrintWriterPrinter;
 import android.util.Printer;
+import android.util.DisplayMetrics;
+import android.view.WindowManager;
 import android.view.Gravity;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 import android.view.Window;
 import android.view.WindowInsetsController;
 import android.view.inputmethod.EditorInfo;
+import android.widget.ImageButton;
+import android.widget.LinearLayout;
+import android.widget.PopupWindow;
+import android.widget.TextView;
+
+import android.content.ClipboardManager;
+import android.content.ClipData;
 
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
+import rkr.simplekeyboard.inputmethod.R;
 import rkr.simplekeyboard.inputmethod.compat.EditorInfoCompatUtils;
 import rkr.simplekeyboard.inputmethod.compat.PreferenceManagerCompat;
 import rkr.simplekeyboard.inputmethod.event.Event;
@@ -963,4 +974,67 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
     public void switchToAlphaKeyboard() {
         mKeyboardSwitcher.setAlphabetKeyboard();
     }
+
+    public void showPopup(String dynamicMessage) {
+        View anchorView = mKeyboardSwitcher.getMainKeyboardView();
+        showScrollablePopup(anchorView, dynamicMessage);
+    }
+
+    public void showScrollablePopup(View anchorView, String dynamicMessage) {
+        // Inflate the custom layout
+        // inflating means to create the view hierarchy from the XML layout file
+        // Essentially bringing the XML layout to life by creating the corresponding View objects in memory
+        LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
+        View popupView = inflater.inflate(R.layout.popup_layout, null);
+
+        // Get device width and height
+        // The popup will be about 25% of the screen height and full width,
+        //  but can be scrolled down as needed to see the full content
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        WindowManager windowManager = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
+        if (windowManager != null) {
+            windowManager.getDefaultDisplay().getMetrics(displayMetrics);
+        }
+        int width = displayMetrics.widthPixels;
+        int height = displayMetrics.heightPixels;
+        int popupWidth = width;
+        int popupHeight = (int) (height * 0.25); // 25% of screen height
+
+        // Create the PopupWindow
+        final PopupWindow popupWindow = new PopupWindow(
+            popupView,
+            popupWidth,
+            popupHeight,
+            true // focusable
+        );
+
+        // Set the dynamic message
+        // This is where the decypted message will be displayed in the popup
+        TextView textView = popupView.findViewById(R.id.message_text);
+        textView.setText(dynamicMessage);
+
+        // Set up the 'X' button to dismiss the popup
+        ImageButton closeButton = popupView.findViewById(R.id.close_button);
+        closeButton.setOnClickListener(v -> popupWindow.dismiss());
+
+        // Set up the 'Copy' button to copy the message to clipboard and show a notification
+        ImageButton copyButton = popupView.findViewById(R.id.copy_button);
+        copyButton.setOnClickListener(v -> {
+            ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+            ClipData clip = ClipData.newPlainText("plain_text", textView.getText());
+            clipboard.setPrimaryClip(clip);
+            // Log.d("popup Copy", "Message copied to clipboard: " + textView.getText());
+
+            // Scrambler does not request notification permissions which are required 
+            // to show toast notifications on Android 13 and above
+            // so this message will not show unless the user has granted notification permissions to Scrambler
+            // it is not necessary to show a notification here, but it is a nice user experience touch to confirm that the message was copied
+            android.widget.Toast.makeText(getApplicationContext(), "Copied to clipboard", android.widget.Toast.LENGTH_SHORT).show();
+        });
+
+        // Show the popup above the keyboard view
+        int yOffset = -(anchorView.getHeight() + popupHeight);
+        popupWindow.showAsDropDown(anchorView, 0, yOffset);
+}
+
 }
