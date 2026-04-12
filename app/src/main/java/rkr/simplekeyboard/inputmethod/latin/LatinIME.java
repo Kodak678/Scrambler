@@ -57,10 +57,14 @@ import android.widget.TextView;
 import android.content.ClipboardManager;
 import android.content.ClipData;
 
+import com.google.crypto.tink.config.TinkConfig;
+
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
+import java.security.GeneralSecurityException;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
+import java.util.Set;
 
 import rkr.simplekeyboard.inputmethod.R;
 import rkr.simplekeyboard.inputmethod.compat.EditorInfoCompatUtils;
@@ -79,6 +83,7 @@ import rkr.simplekeyboard.inputmethod.latin.settings.Settings;
 import rkr.simplekeyboard.inputmethod.latin.settings.SettingsActivity;
 import rkr.simplekeyboard.inputmethod.latin.settings.SettingsValues;
 import rkr.simplekeyboard.inputmethod.latin.utils.ApplicationUtils;
+import rkr.simplekeyboard.inputmethod.latin.utils.DialogUtils;
 import rkr.simplekeyboard.inputmethod.latin.utils.LeakGuardHandlerWrapper;
 import rkr.simplekeyboard.inputmethod.latin.utils.ResourceUtils;
 import rkr.simplekeyboard.inputmethod.latin.utils.ViewLayoutUtils;
@@ -95,6 +100,7 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
     private static final int PERIOD_FOR_AUDIO_AND_HAPTIC_FEEDBACK_IN_KEY_REPEAT = 2;
     private static final int PENDING_IMS_CALLBACK_DURATION_MILLIS = 800;
     static final long DELAY_DEALLOCATE_MEMORY_MILLIS = TimeUnit.SECONDS.toMillis(10);
+    private static volatile boolean sTinkInitialized = false;
 
     final Settings mSettings;
     private Locale mLocale;
@@ -262,6 +268,7 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
 
     @Override
     public void onCreate() {
+        initializeTinkPrimitives();
         Settings.init(this);
         DebugFlags.init(PreferenceManagerCompat.getDeviceSharedPreferences(this));
         RichInputMethodManager.init(this);
@@ -279,6 +286,24 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
         final IntentFilter filter = new IntentFilter();
         filter.addAction(AudioManager.RINGER_MODE_CHANGED_ACTION);
         registerReceiver(mRingerModeChangeReceiver, filter);
+    }
+
+    private void initializeTinkPrimitives() {
+        if (sTinkInitialized) {
+            return;
+        }
+        synchronized (LatinIME.class) {
+            if (sTinkInitialized) {
+                return;
+            }
+            try {
+                TinkConfig.register();
+                sTinkInitialized = true;
+            } catch (GeneralSecurityException e) {
+                Log.e(TAG, "Failed to initialize Tink", e);
+                throw new IllegalStateException("Failed to initialize Tink primitives", e);
+            }
+        }
     }
 
     private void loadSettings() {
@@ -1035,6 +1060,73 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
         // Show the popup above the keyboard view
         int yOffset = -(anchorView.getHeight() + popupHeight);
         popupWindow.showAsDropDown(anchorView, 0, yOffset);
-}
+    }
 
+    public void showContacts(Set<String> contacts, ContactSelectionListener listener) {
+        View anchorView = mKeyboardSwitcher.getMainKeyboardView();
+        showScrollableContacts(anchorView, contacts, listener);
+    }
+    
+    public interface ContactSelectionListener {
+        void onContactSelected(String contact);
+    }
+
+    public void showScrollableContacts(View anchorView, Set<String> contacts, ContactSelectionListener listener) {
+        // Inflate the custom layout
+        // inflating means to create the view hierarchy from the XML layout file
+        // Essentially bringing the XML layout to life by creating the corresponding View objects in memory
+        LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
+        View popupView = inflater.inflate(R.layout.contacts, null);
+
+        // Popup sizing and showing as 25% of the screen height and full width, 
+        // but can be scrolled down as needed to see the full content
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        WindowManager windowManager = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
+        if (windowManager != null) {
+            windowManager.getDefaultDisplay().getMetrics(displayMetrics);
+        }
+        int width = displayMetrics.widthPixels;
+        int height = displayMetrics.heightPixels;
+        int popupWidth = width;
+        int popupHeight = (int) (height * 0.25);
+
+        final PopupWindow popupWindow = new PopupWindow(
+            popupView,
+            popupWidth,
+            popupHeight,
+            true
+        );
+
+        // Find the RadioGroup
+        android.widget.RadioGroup radioGroup = popupView.findViewById(R.id.radioGroup);
+        radioGroup.removeAllViews(); // Clear any existing radio buttons
+
+        // Dynamically add a RadioButton for each contact
+        int id = 1000; // Unique ID for each radio button
+        for (String contact : contacts) {
+            android.widget.RadioButton radioButton = new android.widget.RadioButton(this);
+            radioButton.setText(contact);
+            radioButton.setId(id++);
+            radioButton.setLayoutParams(new android.widget.RadioGroup.LayoutParams(
+                android.widget.RadioGroup.LayoutParams.MATCH_PARENT,
+                android.widget.RadioGroup.LayoutParams.WRAP_CONTENT
+            ));
+            radioButton.setPadding(12, 12, 12, 12);
+            radioGroup.addView(radioButton);
+        }
+
+        // Set a listener to get the selected contact and close the popup
+        radioGroup.setOnCheckedChangeListener((group, checkedId) -> {
+            android.widget.RadioButton selected = group.findViewById(checkedId);
+            if (selected != null) {
+                String selectedContact = selected.getText().toString();
+                Log.d("Contact Selection", "Selected contact: " + selectedContact);
+                popupWindow.dismiss();
+                if (listener != null) listener.onContactSelected(selectedContact);
+            }
+        });
+
+        int yOffset = -(anchorView.getHeight() + popupHeight);
+        popupWindow.showAsDropDown(anchorView, 0, yOffset);
+    }
 }

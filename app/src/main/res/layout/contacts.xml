@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:background="@android:color/white">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <RadioGroup
+            android:id="@+id/radioGroup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <RadioButton
+                android:id="@+id/radio_option_1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Contact 1"
+                android:padding="12dp" />
+
+            <RadioButton
+                android:id="@+id/radio_option_2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Contact 2"
+                android:padding="12dp" />
+
+            <RadioButton
+                android:id="@+id/radio_option_3"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Contact 3"
+                android:padding="12dp" />
+
+        </RadioGroup>
+
+    </ScrollView>
+
+</LinearLayout>

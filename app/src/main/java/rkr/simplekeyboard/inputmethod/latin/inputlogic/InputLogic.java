@@ -27,6 +27,7 @@ import android.view.KeyCharacterMap;
 import android.view.KeyEvent;
 import android.view.inputmethod.EditorInfo;
 
+import java.util.Set;
 import java.util.TreeSet;
 
 import rkr.simplekeyboard.inputmethod.event.Event;
@@ -40,12 +41,12 @@ import rkr.simplekeyboard.inputmethod.latin.utils.InputTypeUtils;
 import rkr.simplekeyboard.inputmethod.latin.utils.RecapitalizeStatus;
 import rkr.simplekeyboard.inputmethod.latin.utils.SubtypeLocaleUtils;
 import Scrambler.ScramblerMainActivity;
-
+import Scrambler.ScramblerTinkKeyManager;
 import android.util.Log;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
-
+import rkr.simplekeyboard.inputmethod.latin.LatinIME.ContactSelectionListener;
 /**
  * This class manages the input logic.
  */
@@ -244,12 +245,12 @@ public final class InputLogic {
                 break;
             case Constants.CODE_CRYPTO:
                 // Switch to the crypto keyboard layout
-                Log.d("InputLogic", "Switching to crypto layout");
+                // Log.d("InputLogic", "Switching to crypto layout");
                 mLatinIME.switchToCryptoKeyboard();
                 break;
             case Constants.CODE_ABC:
                 // Switch to the alpha keyboard layout
-                Log.d("InputLogic", "Switching to alpha layout");
+                // Log.d("InputLogic", "Switching to alpha layout");
                 mLatinIME.switchToAlphaKeyboard();
                 break;
             default:
@@ -263,53 +264,62 @@ public final class InputLogic {
     //  */
 
     private void handleCryptoTransformation(CryptoType cryptoType) {
-        
-        
-        if (cryptoType != CryptoType.DECRYPT) {
+        try {
+            Set<String> Contacts = new ScramblerTinkKeyManager(mLatinIME).getAllContacts();
 
-            // Reload the text cache to ensure we have the latest text from the editor.
-            mConnection.reloadTextCache();
-    
-            String currentText = "";
-            if (mConnection.hasSelection()) {
-                currentText = mConnection.getSelectedText().toString();
-            } else {
-                // making use of the new public accessor instead of touching private fields.
-                currentText = mConnection.getTextBeforeCursorCached();
-            }
-    
-            final String modifiedText = ScramblerMainActivity.processText(currentText, cryptoType);
+            mLatinIME.showContacts(Contacts, new ContactSelectionListener() {
 
-            mConnection.beginBatchEdit();
-            if (mConnection.hasSelection()) {
-                // Replace the selected text: delete it, then commit the modified text.
-                mConnection.deleteSelectedText();
-                mConnection.commitText(modifiedText, 0);
-            } else {
-                // No selection: replace the text before the cursor by deleting it and
-                // committing the modified text
-                // This section essentially deletes the number of characters equal to the length of currentText
-                // this process can be likened to pressing backspace multiple times before typing in the new text.
-                // There might be a more efficient way to do this but i have not found it yet.
-                // This does work correctly for now.
-                final int numCharsToDelete = (currentText == null) ? 0 : currentText.length();
-                if (numCharsToDelete > 0) {
-                    mConnection.deleteTextBeforeCursor(numCharsToDelete);
-                }
-                mConnection.commitText(modifiedText, 1);
-            }
-            mConnection.endBatchEdit();
-        }
-        if (cryptoType == CryptoType.DECRYPT) {
-            String clipboardText = getClipboardText();
-            if (clipboardText != null) {
-
-                String decryptedText = ScramblerMainActivity.processText(clipboardText, cryptoType);
-                // Log.d("InputLogic", "Decrypted clipboard text: " + decryptedText);
-                mLatinIME.showPopup(decryptedText);
+            @Override
+            public void onContactSelected(String selectedContact) {
                
+                if (cryptoType != CryptoType.DECRYPT) {
+                    // Reload the text cache to ensure we have the latest text from the editor.
+                    mConnection.reloadTextCache();
+
+                    String currentText = "";
+                    if (mConnection.hasSelection()) {
+                        currentText = mConnection.getSelectedText().toString();
+                    } else {
+                        // making use of the new public accessor instead of touching private fields.
+                        currentText = mConnection.getTextBeforeCursorCached();
+                    }
+
+                    final String modifiedText = ScramblerMainActivity.processText(currentText, cryptoType, selectedContact);
+
+                    mConnection.beginBatchEdit();
+                    if (mConnection.hasSelection()) {
+                        // Replace the selected text: delete it, then commit the modified text.
+                        mConnection.deleteSelectedText();
+                        mConnection.commitText(modifiedText, 0);
+                    } else {
+                        // No selection: replace the text before the cursor by deleting it and
+                        // committing the modified text
+                        // This section essentially deletes the number of characters equal to the length of currentText
+                        // this process can be likened to pressing backspace multiple times before typing in the new text.
+                        // There might be a more efficient way to do this but i have not found it yet.
+                        // This does work correctly for now.
+                        final int numCharsToDelete = (currentText == null) ? 0 : currentText.length();
+                        if (numCharsToDelete > 0) {
+                            mConnection.deleteTextBeforeCursor(numCharsToDelete);
+                        }
+                        mConnection.commitText(modifiedText, 1);
+                    }
+                    mConnection.endBatchEdit();
+                }
+                if (cryptoType == CryptoType.DECRYPT) {
+                    String clipboardText = getClipboardText();
+                    if (clipboardText != null) {
+                        String decryptedText = ScramblerMainActivity.processText(clipboardText, cryptoType, selectedContact);
+                        mLatinIME.showPopup(decryptedText);
+                    }
+                }
             }
+        });
+        } catch (java.security.GeneralSecurityException | java.io.IOException e) {
+            Log.e("InputLogic", "Error initializing ScramblerTinkKeyManager", e);
+            mLatinIME.showPopup("Crypto error: " + e.getMessage());
         }
+
     }
 
     /**
@@ -649,7 +659,7 @@ public String getClipboardText() {
     }
     // Log.d("Clipboard", "No text found in clipboard"); 
     return null; // Return null if no text is found
-}
+    }
 
 
 }

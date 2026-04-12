@@ -37,18 +37,24 @@ public class ScramblerMainActivity extends AppCompatActivity {
             }
         });
 
-        
+        Button addUserButton = findViewById(R.id.add_user_button);
+        addUserButton.setOnClickListener(new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            Intent intent = new Intent(ScramblerMainActivity.this, Scrambler.AddUserActivity.class);
+            startActivity(intent);
+        }
+        });
     }
-    
-    public static String processText(String inputText, CryptoType cryptoType) {
+    public static String processText(String inputText, CryptoType cryptoType, String selectedContact) {
         
         if (cryptoType == CryptoType.ENCRYPT) 
         {
-            return "[Encrypted]";
+            return "[Encrypted]" + selectedContact;
         } 
         else if (cryptoType == CryptoType.DECRYPT) 
         {
-            return "[Decrypted]" + inputText + "[Decrypted]"; 
+            return "[Decrypted]" + inputText + "||" + selectedContact + "[Decrypted]"; 
         } 
         else if (cryptoType == CryptoType.SIGN) 
         {

@@ -47,6 +47,16 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="Scrambler.ScramblerMainActivity" />
         </activity>
+
+        <activity
+            android:name="Scrambler.AddUserActivity"
+            android:exported="true"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"
+            android:parentActivityName="Scrambler.ScramblerMainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="Scrambler.ScramblerMainActivity" />
+        </activity>
             
         <receiver
             android:name=".latin.SystemBroadcastReceiver"

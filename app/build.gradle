@@ -23,4 +23,6 @@ implementation 'androidx.appcompat:appcompat:1.7.1'
     implementation 'com.google.android.material:material:1.13.0'
     implementation 'androidx.activity:activity:1.12.2'
     implementation 'androidx.constraintlayout:constraintlayout:2.2.1'
+    implementation 'com.google.crypto.tink:tink-android:1.13.0'
+    implementation 'com.google.firebase:firebase-crashlytics-buildtools:3.0.6'
 }
