@@ -94,6 +94,9 @@ import rkr.simplekeyboard.inputmethod.latin.utils.ViewLayoutUtils;
 public class LatinIME extends InputMethodService implements KeyboardActionListener,
         RichInputMethodManager.SubtypeChangedListener {
     static final String TAG = LatinIME.class.getSimpleName();
+    private static final String SCRAMBLER_PREFS = "scrambler_prefs";
+    private static final String PREF_SELECTED_CONTACT = "currently-selected-contact";
+    private static final String DEFAULT_CONTACT_LABEL = "NO-CONTACT-SELECTED";
     private static final boolean TRACE = false;
 
     private static final int EXTENDED_TOUCHABLE_REGION_HEIGHT = 100;
@@ -363,6 +366,8 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
     public void setInputView(final View view) {
         super.setInputView(view);
         mInputView = view;
+        updateCryptoContactStatusUi(
+                mKeyboardSwitcher.isShowingKeyboardId(KeyboardId.ELEMENT_CRYPTO));
         updateSoftInputWindowLayoutParameters();
     }
 
@@ -493,6 +498,8 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
             switcher.resetKeyboardStateToAlphabet(getCurrentAutoCapsState(),
                     getCurrentRecapitalizeState());
         }
+
+        updateCryptoContactStatusUi(switcher.isShowingKeyboardId(KeyboardId.ELEMENT_CRYPTO));
 
         if (TRACE) Debug.startMethodTracing("/data/trace/latinime");
     }
@@ -991,6 +998,7 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
     // not being detected in onPressKey detection in KeyboardState
     public void switchToCryptoKeyboard() {
         mKeyboardSwitcher.setCryptoKeyboard();
+        updateCryptoContactStatusUi(true);
     }
 
     // Public method to switch to the alpha keyboard
@@ -998,6 +1006,45 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
     // not being detected in onPressKey detection in KeyboardState
     public void switchToAlphaKeyboard() {
         mKeyboardSwitcher.setAlphabetKeyboard();
+        updateCryptoContactStatusUi(false);
+    }
+
+    // Actually setting the value of the contact status text view to the currently selected contact's label
+    // Gotta check if the the root keybaord view is null first just in case, 
+    // but if it isn't then we can find the crypto contact status text view and set its text to the currently 
+    // selected contact's label
+    public void refreshCryptoContactStatusText() {
+        final TextView statusView = (mInputView == null)
+                ? null : mInputView.findViewById(R.id.crypto_contact_status);
+        if (statusView != null) {
+            statusView.setText(getSelectedContactLabel());
+        }
+    }
+
+    // I don't really want the currently selected contact's label to be visible when the user is not using the crypto keyboard, 
+    // so this method sets the visibility of the contact status text view based on whether 
+    // the crypto keyboard is currently visible
+    // Just in case the Simple Keyboard gets an update for swipe typing or something
+    private void setCryptoContactStatusVisible(final boolean visible) {
+        final TextView statusView = (mInputView == null)
+                ? null : mInputView.findViewById(R.id.crypto_contact_status);
+        if (statusView != null) {
+            statusView.setVisibility(visible ? View.VISIBLE : View.GONE);
+        }
+    }
+
+    private void updateCryptoContactStatusUi(final boolean isCryptoKeyboardVisible) {
+        refreshCryptoContactStatusText();
+        setCryptoContactStatusVisible(isCryptoKeyboardVisible);
+    }
+
+  
+    //  Retrieves the selected contact label from shared preferences, or returns a default label if none is selected.
+    private String getSelectedContactLabel() {
+        final SharedPreferences prefs = getApplicationContext()
+                .getSharedPreferences(SCRAMBLER_PREFS, Context.MODE_PRIVATE);
+        final String selectedContact = prefs.getString(PREF_SELECTED_CONTACT, null);
+        return TextUtils.isEmpty(selectedContact) ? DEFAULT_CONTACT_LABEL : selectedContact;
     }
 
     public void showPopup(String dynamicMessage) {

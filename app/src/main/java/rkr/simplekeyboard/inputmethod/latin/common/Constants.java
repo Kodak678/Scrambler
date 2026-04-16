@@ -114,6 +114,8 @@ public final class Constants {
 
     public static final int CODE_ABC = -19;
 
+    public static final int CODE_CONTACT = -20;
+
     // Code value representing the code is not specified.
     public static final int CODE_UNSPECIFIED = -13;
 

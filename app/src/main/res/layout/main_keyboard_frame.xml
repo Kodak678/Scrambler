@@ -25,6 +25,22 @@
     android:layout_gravity="bottom"
     android:orientation="vertical" >
 
+    <TextView
+        android:id="@+id/crypto_contact_status"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:paddingStart="12dp"
+        android:paddingTop="6dp"
+        android:paddingEnd="12dp"
+        android:paddingBottom="6dp"
+        android:singleLine="true"
+        android:ellipsize="end"
+        android:text="NO-CONTACT-SELECTED"
+        android:textStyle="bold"
+        android:background="@color/background_lxx_light" 
+        android:visibility="gone" />
+
     <!-- To ensure that key preview popup is correctly placed when the current system locale is
          one of RTL locales, layoutDirection="ltr" is needed in the SDK version 17+. -->
     <rkr.simplekeyboard.inputmethod.keyboard.MainKeyboardView

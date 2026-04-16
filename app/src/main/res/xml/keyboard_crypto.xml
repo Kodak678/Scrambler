@@ -1,4 +1,3 @@
-
 <Keyboard
     xmlns:latin="http://schemas.android.com/apk/res-auto"
     xmlns:android="http://schemas.android.com/apk/res/android"
@@ -24,7 +23,13 @@
     </Row>
     <Row>
          <Key
-            latin:keyWidth="25%p"
+            latin:keyWidth="100%p"
+            latin:keySpec="!text/keylabel_contact|!code/key_contact"
+      />
+    </Row>
+    <Row>
+         <Key
+            latin:keyWidth="100%p"
             latin:keySpec="!text/keylabel_abc|!code/key_abc"
       />
     </Row>

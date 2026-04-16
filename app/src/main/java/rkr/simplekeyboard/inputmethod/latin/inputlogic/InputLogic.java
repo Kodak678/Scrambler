@@ -253,6 +253,28 @@ public final class InputLogic {
                 // Log.d("InputLogic", "Switching to alpha layout");
                 mLatinIME.switchToAlphaKeyboard();
                 break;
+            case Constants.CODE_CONTACT:
+                try {
+
+                    Set<String> Contacts = new ScramblerTinkKeyManager(mLatinIME).getAllContacts();
+                    mLatinIME.showContacts(Contacts, new ContactSelectionListener() {
+                        public void onContactSelected(String selectedContact) {
+                            // Log.d("Contact", selectedContact);
+                            // Save selectedContact to SharedPreferences
+                            Context context = mLatinIME.getApplicationContext();
+                            android.content.SharedPreferences prefs = context.getSharedPreferences("scrambler_prefs", Context.MODE_PRIVATE);
+                            prefs.edit().putString("currently-selected-contact", selectedContact).apply();
+
+                            // Set the view above the keyboard to show the currently selected contact
+                            mLatinIME.refreshCryptoContactStatusText();
+                        }
+                    });
+
+                } catch (java.security.GeneralSecurityException | java.io.IOException e) {
+                    Log.e("InputLogic", "Error initializing ScramblerTinkKeyManager", e);
+                    mLatinIME.showPopup("Crypto error: " + e.getMessage());
+                }
+                break;
             default:
                 throw new RuntimeException("Unknown key code : " + event.mKeyCode);
         }
@@ -264,14 +286,26 @@ public final class InputLogic {
     //  */
 
     private void handleCryptoTransformation(CryptoType cryptoType) {
-        try {
-            Set<String> Contacts = new ScramblerTinkKeyManager(mLatinIME).getAllContacts();
+   
+                String selectedContact = null;
+                
+                try {
+                    
+                    // Fetch selectedContact from SharedPreferences
+                    Context context = mLatinIME.getApplicationContext();
+                    android.content.SharedPreferences prefs = context.getSharedPreferences("scrambler_prefs", Context.MODE_PRIVATE);
+                    String prefContact = prefs.getString("currently-selected-contact", null);
+                    selectedContact = prefContact;
 
-            mLatinIME.showContacts(Contacts, new ContactSelectionListener() {
-
-            @Override
-            public void onContactSelected(String selectedContact) {
-               
+                    if (selectedContact == null) {
+                        android.os.Handler handler = new android.os.Handler(android.os.Looper.getMainLooper());
+                        handler.post(() -> android.widget.Toast.makeText(context, "Please choose a contact", android.widget.Toast.LENGTH_SHORT).show());
+                        return; // Exit the method if no contact is selected
+                    }
+                } catch (Exception e) {
+                    Log.e("InputLogic", "Error fetching selected contact from preferences", e);
+                }
+              
                 if (cryptoType != CryptoType.DECRYPT) {
                     // Reload the text cache to ensure we have the latest text from the editor.
                     mConnection.reloadTextCache();
@@ -314,13 +348,7 @@ public final class InputLogic {
                     }
                 }
             }
-        });
-        } catch (java.security.GeneralSecurityException | java.io.IOException e) {
-            Log.e("InputLogic", "Error initializing ScramblerTinkKeyManager", e);
-            mLatinIME.showPopup("Crypto error: " + e.getMessage());
-        }
 
-    }
 
     /**
      * Handle an event that is not a functional event.
