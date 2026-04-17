@@ -46,11 +46,21 @@
             android:layout_marginTop="8dp"
             android:layout_marginBottom="8dp" />
 
-        <Button
-            android:id="@+id/paste_key_button"
+
+
+        <!-- Handshake Payload Output Area (Uneditable, Selectable) -->
+        <TextView
+            android:id="@+id/handshake_payload_output"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Paste Public Key"
+            android:layout_height="120dp"
+            android:background="#EEEEEE"
+            android:textColor="#222222"
+            android:textIsSelectable="true"
+            android:padding="8dp"
+            android:gravity="top|start"
+            android:scrollbars="vertical"
+            android:hint="Generated handshake payload will appear here"
+            android:layout_marginTop="8dp"
             android:layout_marginBottom="16dp" />
 
         <!-- Encryption Key Display/Input -->

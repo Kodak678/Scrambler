@@ -23,17 +23,10 @@ public class AddUserActivity extends AppCompatActivity {
 
     private EditText contactNameEditText;
     private Button generateKeyButton;
-    private Button pasteKeyButton;
     private EditText encryptionKeyEditText;
     private EditText signingKeyEditText;
     private Button saveButton;
-
-    // This variable tracks whether the user generated a key when adding a new user, 
-    // which affects whether we call acceptHandshake on save. If they generated a key, 
-    // we assume they already have the public key and just want to save the contact without accepting a handshake. 
-    // If they didn't generate a key, we assume they pasted an encryption key and need to call acceptHandshake 
-    // to validate and save it.
-    private boolean generatedKey = false;
+    private android.widget.TextView handshakePayloadOutput;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,12 +39,17 @@ public class AddUserActivity extends AppCompatActivity {
             return insets;
         });
 
+        // Enable the up button in the action bar
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
+
         contactNameEditText = findViewById(R.id.contact_name_input);
         generateKeyButton = findViewById(R.id.generate_key_button);
-        pasteKeyButton = findViewById(R.id.paste_key_button);
         encryptionKeyEditText = findViewById(R.id.encryption_key_input);
         signingKeyEditText = findViewById(R.id.signing_key_input);
         saveButton = findViewById(R.id.save_button);
+        handshakePayloadOutput = findViewById(R.id.handshake_payload_output);
 
         // Initially disable action buttons until name is provided
         updateButtonEnablement();
@@ -71,8 +69,17 @@ public class AddUserActivity extends AppCompatActivity {
         });
 
         generateKeyButton.setOnClickListener(v -> onGenerateKeyClick());
-        pasteKeyButton.setOnClickListener(v -> onPasteKeyClick());
         saveButton.setOnClickListener(v -> onSaveClick());
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(android.view.MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            // Handle up button click: finish this activity
+            finish();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     private void updateButtonEnablement() {
@@ -89,11 +96,9 @@ public class AddUserActivity extends AppCompatActivity {
         }
 
         generateKeyButton.setEnabled(isValid);
-        pasteKeyButton.setEnabled(isValid);
         saveButton.setEnabled(isValid);
 
         float enabledAlpha = isValid ? 1.0f : 0.5f;
-        pasteKeyButton.setAlpha(enabledAlpha);
         generateKeyButton.setAlpha(enabledAlpha);
         saveButton.setAlpha(enabledAlpha);
     }
@@ -119,11 +124,10 @@ public class AddUserActivity extends AppCompatActivity {
         try {
             final String handshakePayload = new ScramblerTinkKeyManager(this)
                     .offerHandshake(contactName);
-            encryptionKeyEditText.setText(handshakePayload);
+            handshakePayloadOutput.setText(handshakePayload);
             signingKeyEditText.setText("");
             // Lock the contact name field after successful key generation
             contactNameEditText.setEnabled(false);
-            generatedKey = true;
             Toast.makeText(this, "Encryption public key generated.", Toast.LENGTH_SHORT).show();
         } catch (Exception e) {
             Log.e(TAG, "Failed to generate key", e);
@@ -131,9 +135,6 @@ public class AddUserActivity extends AppCompatActivity {
         }
     }
 
-    private void onPasteKeyClick() {
-        Toast.makeText(this, "Paste your encryption public key data URI above", Toast.LENGTH_SHORT).show();
-    }
 
     private void onSaveClick() {
         final String contactName = contactNameEditText.getText().toString().trim();
@@ -162,15 +163,10 @@ public class AddUserActivity extends AppCompatActivity {
                     Toast.LENGTH_SHORT).show();
                 return;
             }
-            if (generatedKey != true) {
-                new ScramblerTinkKeyManager(this)
-                    .acceptHandshake(contactName, encryptionKey);
-                Toast.makeText(this, "Contact '" + contactName + "' added successfully!", Toast.LENGTH_SHORT).show();
-                finish();
-            }
-            
-            Toast.makeText(this, "Contact '" + contactName + "' added successfully, don't forget to get their public encryption key!", Toast.LENGTH_SHORT).show();
-            // Finish activity and return to main
+            // Always acceptHandshake when saving, since the output area is now separate
+            new ScramblerTinkKeyManager(this)
+                .acceptHandshake(contactName, encryptionKey);
+            Toast.makeText(this, "Contact '" + contactName + "' added successfully!", Toast.LENGTH_SHORT).show();
             finish();
         } catch (Exception e) {
             Log.e(TAG, "Failed to save contact", e);

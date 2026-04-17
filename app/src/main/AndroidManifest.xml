@@ -9,7 +9,7 @@
         android:allowBackup="true"
         android:fullBackupOnly="true"
         android:icon="@mipmap/ic_launcher"
-        android:label="@string/english_ime_name"
+        android:label="Scrambler"
         android:supportsRtl="true">
         
         <activity
@@ -51,7 +51,7 @@
         <activity
             android:name="Scrambler.AddUserActivity"
             android:exported="true"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar"
+            android:theme="@style/Theme.AppCompat.Light.DarkActionBar"
             android:parentActivityName="Scrambler.ScramblerMainActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
