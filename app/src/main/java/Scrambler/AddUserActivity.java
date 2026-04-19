@@ -125,7 +125,6 @@ public class AddUserActivity extends AppCompatActivity {
             final String handshakePayload = new ScramblerTinkKeyManager(this)
                     .offerHandshake(contactName);
             handshakePayloadOutput.setText(handshakePayload);
-            signingKeyEditText.setText("");
             // Lock the contact name field after successful key generation
             contactNameEditText.setEnabled(false);
             Toast.makeText(this, "Encryption public key generated.", Toast.LENGTH_SHORT).show();
@@ -164,8 +163,13 @@ public class AddUserActivity extends AppCompatActivity {
                 return;
             }
             // Always acceptHandshake when saving, since the output area is now separate
-            new ScramblerTinkKeyManager(this)
-                .acceptHandshake(contactName, encryptionKey);
+            ScramblerTinkKeyManager keyManager = new ScramblerTinkKeyManager(this);
+            keyManager.acceptHandshake(contactName, encryptionKey);
+
+            if (!TextUtils.isEmpty(signingKeyEditText.getText().toString().trim())) {
+                keyManager.storeContactSigningPublicKey(contactName, signingKeyEditText.getText().toString().trim());
+            }
+            
             Toast.makeText(this, "Contact '" + contactName + "' added successfully!", Toast.LENGTH_SHORT).show();
             finish();
         } catch (Exception e) {

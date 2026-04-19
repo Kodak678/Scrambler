@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:id="@+id/main"
-    tools:context="Scrambler.AddUserActivity">
+    tools:context="Scrambler.UpdateContactActivity">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -13,11 +13,11 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-        <!-- Contact Name Input -->
+        <!-- Contact Name Input (disabled) -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Contact Name (Required)"
+            android:text="Contact Name"
             android:textStyle="bold"
             android:layout_marginTop="16dp" />
 
@@ -25,8 +25,9 @@
             android:id="@+id/contact_name_input"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Enter contact name"
+            android:hint="Contact name"
             android:inputType="text"
+            android:enabled="false"
             android:layout_marginTop="8dp"
             android:layout_marginBottom="16dp" />
 
@@ -45,8 +46,6 @@
             android:text="Generate New Key Pair"
             android:layout_marginTop="8dp"
             android:layout_marginBottom="8dp" />
-
-
 
         <!-- Handshake Payload Output Area (Uneditable, Selectable) -->
         <TextView
@@ -75,7 +74,7 @@
             android:id="@+id/encryption_key_input"
             android:layout_width="match_parent"
             android:layout_height="120dp"
-            android:hint="Paste encryption public key here"
+            android:hint="Generated public key will appear here"
             android:inputType="textMultiLine"
             android:gravity="top"
             android:scrollbars="vertical"
@@ -108,6 +107,17 @@
             android:layout_height="wrap_content"
             android:text="Save Contact"
             android:layout_marginTop="16dp"
+            android:layout_marginBottom="8dp" />
+
+        <!-- Delete Button -->
+        <Button
+            android:id="@+id/delete_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Delete Contact"
+            android:backgroundTint="#D32F2F"
+            android:textColor="#FFFFFF"
+            android:layout_marginTop="8dp"
             android:layout_marginBottom="16dp" />
 
     </LinearLayout>

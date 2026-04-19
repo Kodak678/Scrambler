@@ -128,15 +128,15 @@ public class ScramblerTinkKeyManager {
         encryptionPrefs.edit().putString(contactName + "_enc_pub", publicKeyB64).apply();
     }
 
-    private String getStoredContactEncryptionPublicKey(String contactName) {
+    public String getStoredContactEncryptionPublicKey(String contactName) {
         return encryptionPrefs.getString(contactName + "_enc_pub", null);
     }
 
-    private void storeContactSigningPublicKey(String contactName, String publicKeyB64) {
+    public void storeContactSigningPublicKey(String contactName, String publicKeyB64) {
         encryptionPrefs.edit().putString(contactName + "_sign_pub", publicKeyB64).apply();
     }
 
-    private String getStoredContactSigningPublicKey(String contactName) {
+    public String getStoredContactSigningPublicKey(String contactName) {
         return encryptionPrefs.getString(contactName + "_sign_pub", null);
     }
 
@@ -174,6 +174,13 @@ public class ScramblerTinkKeyManager {
         encryptionPrefs.edit().remove(keysetName).apply();
         encryptionPrefs.edit().remove(contactName + "_enc_pub").apply();
         encryptionPrefs.edit().remove(contactName + "_sign_pub").apply();
+
+        // Also clear currently-selected contact if it matches the deleted one
+        SharedPreferences prefs = context.getSharedPreferences("scrambler_prefs", Context.MODE_PRIVATE);
+        String selected = prefs.getString("currently-selected-contact", null);
+        if (selected != null && selected.equals(contactName)) {
+            prefs.edit().remove("currently-selected-contact").apply();
+        }
     }
 
     // -------------------- GET ALL CONTACTS --------------------
