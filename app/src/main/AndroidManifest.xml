@@ -68,6 +68,16 @@
                 android:value="Scrambler.ScramblerMainActivity" />
         </activity>
             
+        <activity
+            android:name="Scrambler.MySigningKeyActivity"
+            android:theme="@style/Theme.AppCompat.Light.DarkActionBar"
+            android:exported="true"
+            android:parentActivityName="Scrambler.ScramblerMainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="Scrambler.ScramblerMainActivity" />
+        </activity>
+
         <receiver
             android:name=".latin.SystemBroadcastReceiver"
             android:exported="false">

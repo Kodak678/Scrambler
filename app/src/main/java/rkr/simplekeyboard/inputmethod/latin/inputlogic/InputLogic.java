@@ -28,7 +28,6 @@ import android.view.KeyEvent;
 import android.view.inputmethod.EditorInfo;
 
 import java.util.Set;
-import java.util.TreeSet;
 
 import rkr.simplekeyboard.inputmethod.event.Event;
 import rkr.simplekeyboard.inputmethod.event.InputTransaction;
@@ -40,7 +39,6 @@ import rkr.simplekeyboard.inputmethod.latin.settings.SettingsValues;
 import rkr.simplekeyboard.inputmethod.latin.utils.InputTypeUtils;
 import rkr.simplekeyboard.inputmethod.latin.utils.RecapitalizeStatus;
 import rkr.simplekeyboard.inputmethod.latin.utils.SubtypeLocaleUtils;
-import Scrambler.ScramblerMainActivity;
 import Scrambler.ScramblerTinkKeyManager;
 import android.util.Log;
 import android.content.ClipData;
@@ -58,7 +56,7 @@ public final class InputLogic {
     public final RichInputConnection mConnection;
     private final RecapitalizeStatus mRecapitalizeStatus = new RecapitalizeStatus();
 
-    public static enum CryptoType {
+    public enum CryptoType {
         ENCRYPT,
         DECRYPT,
         SIGN,
@@ -257,17 +255,15 @@ public final class InputLogic {
                 try {
 
                     Set<String> Contacts = new ScramblerTinkKeyManager(mLatinIME).getAllContacts();
-                    mLatinIME.showContacts(Contacts, new ContactSelectionListener() {
-                        public void onContactSelected(String selectedContact) {
-                            // Log.d("Contact", selectedContact);
-                            // Save selectedContact to SharedPreferences
-                            Context context = mLatinIME.getApplicationContext();
-                            android.content.SharedPreferences prefs = context.getSharedPreferences("scrambler_prefs", Context.MODE_PRIVATE);
-                            prefs.edit().putString("currently-selected-contact", selectedContact).apply();
+                    mLatinIME.showContacts(Contacts, selectedContact -> {
+                        // Log.d("Contact", selectedContact);
+                        // Save selectedContact to SharedPreferences
+                        Context context = mLatinIME.getApplicationContext();
+                        android.content.SharedPreferences prefs = context.getSharedPreferences("scrambler_prefs", Context.MODE_PRIVATE);
+                        prefs.edit().putString("currently-selected-contact", selectedContact).apply();
 
-                            // Set the view above the keyboard to show the currently selected contact
-                            mLatinIME.refreshCryptoContactStatusText();
-                        }
+                        // Set the view above the keyboard to show the currently selected contact
+                        mLatinIME.refreshCryptoContactStatusText();
                     });
 
                 } catch (java.security.GeneralSecurityException | java.io.IOException e) {
@@ -288,16 +284,16 @@ public final class InputLogic {
     private void handleCryptoTransformation(CryptoType cryptoType) {
    
                 String selectedContact = null;
-                
+                Context context = mLatinIME.getApplicationContext();
                 try {
                     
                     // Fetch selectedContact from SharedPreferences
-                    Context context = mLatinIME.getApplicationContext();
                     android.content.SharedPreferences prefs = context.getSharedPreferences("scrambler_prefs", Context.MODE_PRIVATE);
-                    String prefContact = prefs.getString("currently-selected-contact", null);
-                    selectedContact = prefContact;
+                    selectedContact = prefs.getString("currently-selected-contact", null);
 
                     if (selectedContact == null) {
+                        // Cannot always just do a Toast here because this function can be called from a non UI thread, 
+                        // so we need to post to the main thread to show the Toast.
                         android.os.Handler handler = new android.os.Handler(android.os.Looper.getMainLooper());
                         handler.post(() -> android.widget.Toast.makeText(context, "Please choose a contact", android.widget.Toast.LENGTH_SHORT).show());
                         return; // Exit the method if no contact is selected
@@ -306,11 +302,11 @@ public final class InputLogic {
                     Log.e("InputLogic", "Error fetching selected contact from preferences", e);
                 }
               
-                if (cryptoType != CryptoType.DECRYPT) {
+                if (cryptoType == CryptoType.ENCRYPT || cryptoType == CryptoType.SIGN) {
                     // Reload the text cache to ensure we have the latest text from the editor.
                     mConnection.reloadTextCache();
 
-                    String currentText = "";
+                    String currentText;
                     if (mConnection.hasSelection()) {
                         currentText = mConnection.getSelectedText().toString();
                     } else {
@@ -318,7 +314,7 @@ public final class InputLogic {
                         currentText = mConnection.getTextBeforeCursorCached();
                     }
 
-                    final String modifiedText = ScramblerMainActivity.processText(currentText, cryptoType, selectedContact);
+                    final String modifiedText = Scrambler.ScramblerMainActivity.processText(context, currentText, cryptoType, selectedContact);
 
                     mConnection.beginBatchEdit();
                     if (mConnection.hasSelection()) {
@@ -339,12 +335,13 @@ public final class InputLogic {
                         mConnection.commitText(modifiedText, 1);
                     }
                     mConnection.endBatchEdit();
-                }
-                if (cryptoType == CryptoType.DECRYPT) {
+                    // After crypto operation, switch back to alphanumeric keyboard and hide contact name view
+                    mLatinIME.switchToAlphaKeyboard();
+                } else if (cryptoType == CryptoType.DECRYPT || cryptoType == CryptoType.VERIFY) {
                     String clipboardText = getClipboardText();
                     if (clipboardText != null) {
-                        String decryptedText = ScramblerMainActivity.processText(clipboardText, cryptoType, selectedContact);
-                        mLatinIME.showPopup(decryptedText);
+                        String resultText = Scrambler.ScramblerMainActivity.processText(context, clipboardText, cryptoType, selectedContact);
+                        mLatinIME.showPopup(resultText);
                     }
                 }
             }

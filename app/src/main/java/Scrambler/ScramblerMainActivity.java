@@ -27,10 +27,25 @@ import java.util.Set;
 import rkr.simplekeyboard.inputmethod.R;
 import rkr.simplekeyboard.inputmethod.latin.inputlogic.InputLogic.CryptoType;
 
+import com.google.crypto.tink.config.TinkConfig;
+import com.google.crypto.tink.signature.SignatureConfig;
+
 public class ScramblerMainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
+        // Register Tink ALL key managers 
+        // This is needed for any Tink operations.
+        // You will get a Tink activity not registered error if you open the ScramblerMainActivity 
+        // before opening the keyboard itself, because the keyboard also uses Tink for encrypting/decrypting messages 
+        // And thus registers the key managers.
+        try {
+            TinkConfig.register();
+        } catch (Exception e) {
+            Log.e("ScramblerMainActivity", "Tink SignatureConfig registration failed", e);
+        }
+
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_scrambler_main);
@@ -58,6 +73,15 @@ public class ScramblerMainActivity extends AppCompatActivity {
         }
         });
 
+            Button mySigningKeyButton = findViewById(R.id.my_signing_key_button);
+            mySigningKeyButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent intent = new Intent(ScramblerMainActivity.this, Scrambler.MySigningKeyActivity.class);
+                    startActivity(intent);
+                }
+            });
+
         // Initial load
         loadContacts();
     }
@@ -83,6 +107,7 @@ public class ScramblerMainActivity extends AppCompatActivity {
         try {
             Contacts = new ScramblerTinkKeyManager(getApplicationContext()).getAllContacts();
         } catch (GeneralSecurityException | IOException e) {
+            Log.e("ScramblerMainActivity", "Error loading contacts: " + e.getMessage(), e);
             Toast.makeText(this, "Error loading contacts: " + e.getMessage(), Toast.LENGTH_SHORT).show();
             return;
         }
@@ -108,6 +133,7 @@ public class ScramblerMainActivity extends AppCompatActivity {
                     // Remove from UI
                     contactsContainer.removeView(contactRow);
                 } catch (Exception e) {
+                    Log.e("ScramblerMainActivity", "Error deleting contact: " + e.getMessage(), e);
                     Toast.makeText(ScramblerMainActivity.this, "Error deleting contact: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 }
             });
@@ -116,29 +142,63 @@ public class ScramblerMainActivity extends AppCompatActivity {
         }
     }
 
-    public static String processText(String inputText, CryptoType cryptoType, String selectedContact) {
-        
-        if (cryptoType == CryptoType.ENCRYPT) 
-        {
-            return "[Encrypted]" + selectedContact;
-        } 
-        else if (cryptoType == CryptoType.DECRYPT) 
-        {
-            return "[Decrypted]" + inputText + "||" + selectedContact + "[Decrypted]"; 
-        } 
-        else if (cryptoType == CryptoType.SIGN) 
-        {
-            return "[Signed]";
-        } 
-        else if (cryptoType == CryptoType.VERIFY) 
-        {
-            return "[Verified]";
-        } 
-        else 
-        {   
-            // Should never reach here. This is just so the method always returns the expected type
-            Log.e("ScramblerMainActivity", "Unknown CryptoType: " + cryptoType);
-            return inputText; 
+    public static String processText(Context context, String inputText, CryptoType cryptoType, String selectedContact) {
+        try {
+            ScramblerTinkKeyManager keyManager = new ScramblerTinkKeyManager(context);
+            if (cryptoType == CryptoType.ENCRYPT) {
+                String ciphertext = keyManager.encryptForContact(selectedContact, inputText);
+                return "[Encrypted]" + ciphertext + "[/Encrypted]";
+            } else if (cryptoType == CryptoType.DECRYPT) {
+                // Parse [Encrypted]...[/Encrypted] tags
+                String tagStart = "[Encrypted]";
+                String tagEnd = "[/Encrypted]";
+                int start = inputText.indexOf(tagStart);
+                int end = inputText.indexOf(tagEnd);
+                if (start != -1 && end != -1 && end > start + tagStart.length()) {
+                    String ciphertext = inputText.substring(start + tagStart.length(), end);
+                    String plaintext = keyManager.decryptFromContact(selectedContact, ciphertext);
+                    return "[Decrypted]" + plaintext + "[/Decrypted]";
+                } else {
+                    return "[Error: Invalid encrypted input]";
+                }
+            } else if (cryptoType == CryptoType.SIGN) {
+                String signature = keyManager.signMessage(inputText);
+                return "[Signed]" + inputText + "<Signiture>" + signature + "</Signiture>" + "[/Signed]";
+            } else if (cryptoType == CryptoType.VERIFY) {
+                // Parse [Signed]...[/Signed] tags
+                String tagStart = "[Signed]";
+                String tagEnd = "[/Signed]";
+                int start = inputText.indexOf(tagStart);
+                int end = inputText.indexOf(tagEnd);
+                if (start != -1 && end != -1 && end > start + tagStart.length()) {
+                    String signedContent = inputText.substring(start + tagStart.length(), end);
+                    // Find <Signiture>...</Signiture> tags
+                    String sigTagStart = "<Signiture>";
+                    String sigTagEnd = "</Signiture>";
+                    int sigStart = signedContent.indexOf(sigTagStart);
+                    int sigEnd = signedContent.indexOf(sigTagEnd);
+                    if (sigStart != -1 && sigEnd != -1 && sigEnd > sigStart + sigTagStart.length()) {
+                        String message = signedContent.substring(0, sigStart);
+                        String signature = signedContent.substring(sigStart + sigTagStart.length(), sigEnd);
+                        boolean verified = keyManager.verifyContactSignature(selectedContact, message, signature);
+                        if (verified) {
+                            return "Contact: " + selectedContact + " has been verified as the sender of this message.[Verified]" + message + "[/Verified]";
+                        } else {
+                            return "[Error: Signature verification failed]";
+                        }
+                    } else {
+                        return "[Error: Invalid signed input - signature tags not found]";
+                    }
+                } else {
+                    return "[Error: This is not a signed message]";
+                }
+            } else {
+                Log.e("ScramblerMainActivity", "Unknown CryptoType: " + cryptoType);
+                return inputText;
+            }
+        } catch (Exception e) {
+            Log.e("ScramblerMainActivity", "Crypto error: " + e.getMessage(), e);
+            return "[Error: Crypto error occurred]";
         }
     }
 }

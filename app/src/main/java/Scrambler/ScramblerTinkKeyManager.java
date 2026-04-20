@@ -56,6 +56,15 @@ public class ScramblerTinkKeyManager {
         this.signingKeyset = manager.getKeysetHandle();
     }
 
+    // Force regeneration of the signing key (dangerous: old signatures will not verify)
+    public void forceRegenerateSigningKey() throws GeneralSecurityException, IOException {
+        // Remove the old keyset from SharedPreferences
+        SharedPreferences prefs = context.getSharedPreferences(SIGNING_PREF_FILE, Context.MODE_PRIVATE);
+        prefs.edit().remove(SIGNING_KEYSET_NAME).apply();
+        // Reinitialize (will generate a new key)
+        initSigningKeyset();
+    }
+
     public String getIdentitySigningPublicKey() throws GeneralSecurityException, IOException {
         KeysetHandle publicHandle = signingKeyset.getPublicKeysetHandle();
         ByteArrayOutputStream out = new ByteArrayOutputStream();
