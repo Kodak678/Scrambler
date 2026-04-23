@@ -116,6 +116,10 @@ public final class Constants {
 
     public static final int CODE_CONTACT = -20;
 
+    public static final int CODE_OFFER_HANDSHAKE = -21;
+
+    public static final int CODE_ACCEPT_HANDSHAKE = -22;
+
     // Code value representing the code is not specified.
     public static final int CODE_UNSPECIFIED = -13;
 

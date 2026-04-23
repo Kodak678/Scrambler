@@ -23,6 +23,7 @@ import java.security.GeneralSecurityException;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import android.util.Log;
 
 public class ScramblerTinkKeyManager {
 
@@ -36,6 +37,9 @@ public class ScramblerTinkKeyManager {
     private static final String ENCRYPTION_KEYSET_PREFIX = "scrambler_enc_";
     private static final String ENCRYPTION_PREF_FILE = "scrambler_encryption_prefs";
 
+    // Contact existence marker key suffix
+    private static final String CONTACT_EXISTS_SUFFIX = "_exists";
+
     private final Context context;
     private KeysetHandle signingKeyset;
     private final SharedPreferences encryptionPrefs;
@@ -44,6 +48,11 @@ public class ScramblerTinkKeyManager {
         this.context = context.getApplicationContext();
         this.encryptionPrefs = context.getSharedPreferences(ENCRYPTION_PREF_FILE, Context.MODE_PRIVATE);
         initSigningKeyset();
+    }
+
+    // Mark a contact as existing
+    private void markContactExists(String contactName) {
+        encryptionPrefs.edit().putBoolean(contactName + CONTACT_EXISTS_SUFFIX, true).apply();
     }
        
     // -------------------- IDENTITY SIGNING KEY --------------------
@@ -118,6 +127,21 @@ public class ScramblerTinkKeyManager {
      * and returns only the public encryption key as a Base64 string.
      */
     public String offerHandshake(String contactName) throws GeneralSecurityException, IOException {
+        // Delete the old private key half of the keyset
+        // Does not delete the  public key stored for the contact (this is the contact's own public key), 
+        // so we do not end up in an eternal loop of regenerating keys 
+        // where one user offers a handshake, the other accepts and stores the public key, 
+        // then the second one offers a handshake which deletes the public key they just got 
+        // from the first one, then the first one accepts and stores the new public key, 
+        // then the first one offers again which deletes the public key they just got from the second one, etc.
+        // This however means that this is only a half handshake 
+        // as the contact's public key will still be used for encryption until they initiate a new handshake. 
+        // Meaning the contact can still decrypt messages sent by us until they offer a new handshake, 
+        // but we will not be able to decrypt messages sent by them until they accept our handshake.
+        String keysetName = ENCRYPTION_KEYSET_PREFIX + contactName;
+        encryptionPrefs.edit().remove(keysetName).commit();
+   
+        markContactExists(contactName);
         return getEncryptionPublicKeyForContact(contactName);
     }
 
@@ -125,11 +149,17 @@ public class ScramblerTinkKeyManager {
      * Accept handshake – takes the encryption public key from the other party
      * and stores it for sending encrypted messages.
     */
-    public void acceptHandshake(String contactName, String encryptionPublicKeyB64) throws IOException {
+    public boolean acceptHandshake(String contactName, String encryptionPublicKeyB64) {
         if (encryptionPublicKeyB64 == null || encryptionPublicKeyB64.trim().isEmpty()) {
-            throw new IllegalArgumentException("Invalid encryption public key");
+            return false;
         }
-        storeContactEncryptionPublicKey(contactName, encryptionPublicKeyB64.trim());
+        try {
+            storeContactEncryptionPublicKey(contactName, encryptionPublicKeyB64.trim());
+            markContactExists(contactName);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     // Helper methods for storing contact public keys
@@ -143,6 +173,7 @@ public class ScramblerTinkKeyManager {
 
     public void storeContactSigningPublicKey(String contactName, String publicKeyB64) {
         encryptionPrefs.edit().putString(contactName + "_sign_pub", publicKeyB64).apply();
+        markContactExists(contactName);
     }
 
     public String getStoredContactSigningPublicKey(String contactName) {
@@ -180,15 +211,16 @@ public class ScramblerTinkKeyManager {
     // -------------------- DELETE CONTACT --------------------
     public void deleteContact(String contactName) {
         String keysetName = ENCRYPTION_KEYSET_PREFIX + contactName;
-        encryptionPrefs.edit().remove(keysetName).apply();
-        encryptionPrefs.edit().remove(contactName + "_enc_pub").apply();
-        encryptionPrefs.edit().remove(contactName + "_sign_pub").apply();
+        encryptionPrefs.edit().remove(keysetName).commit();
+        encryptionPrefs.edit().remove(contactName + CONTACT_EXISTS_SUFFIX).commit();
+        encryptionPrefs.edit().remove(contactName + "_enc_pub").commit();
+        encryptionPrefs.edit().remove(contactName + "_sign_pub").commit();
 
         // Also clear currently-selected contact if it matches the deleted one
         SharedPreferences prefs = context.getSharedPreferences("scrambler_prefs", Context.MODE_PRIVATE);
         String selected = prefs.getString("currently-selected-contact", null);
         if (selected != null && selected.equals(contactName)) {
-            prefs.edit().remove("currently-selected-contact").apply();
+            prefs.edit().remove("currently-selected-contact").commit();
         }
     }
 
@@ -201,8 +233,8 @@ public class ScramblerTinkKeyManager {
 
         for (Map.Entry<String, ?> entry : allEntries.entrySet()) {
             String key = entry.getKey();
-            if (key.endsWith("_enc_pub")) {
-                String cleanName = key.replace("_enc_pub", "");
+            if (key.endsWith(CONTACT_EXISTS_SUFFIX) && Boolean.TRUE.equals(entry.getValue())) {
+                String cleanName = key.substring(0, key.length() - CONTACT_EXISTS_SUFFIX.length());
                 contactNames.add(cleanName);
             }
         }

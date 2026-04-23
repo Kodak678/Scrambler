@@ -192,13 +192,29 @@ public class ScramblerMainActivity extends AppCompatActivity {
                 } else {
                     return "[Error: This is not a signed message]";
                 }
-            } else {
+            } else if (cryptoType == CryptoType.OFFER_HANDSHAKE) {
+                String handshakePayload = keyManager.offerHandshake(selectedContact);
+                return "[HandshakeOffer]" + handshakePayload + "[/HandshakeOffer]";
+            } else if (cryptoType == CryptoType.ACCEPT_HANDSHAKE) {
+                String tagStart = "[HandshakeOffer]";
+                String tagEnd = "[/HandshakeOffer]";
+                int start = inputText.indexOf(tagStart);
+                int end = inputText.indexOf(tagEnd);
+                if (start != -1 && end != -1 && end > start + tagStart.length()) {
+                    String handshakePayload = inputText.substring(start + tagStart.length(), end);
+                    boolean accepted = keyManager.acceptHandshake(selectedContact, handshakePayload);
+                    return accepted ? "True" : "False";
+                } else {
+                    return "False";
+                }
+            } 
+            else {
                 Log.e("ScramblerMainActivity", "Unknown CryptoType: " + cryptoType);
                 return inputText;
             }
         } catch (Exception e) {
             Log.e("ScramblerMainActivity", "Crypto error: " + e.getMessage(), e);
-            return "[Error: Crypto error occurred]";
+            return "[Crypto error: " + e.getMessage() + "]";
         }
     }
 }

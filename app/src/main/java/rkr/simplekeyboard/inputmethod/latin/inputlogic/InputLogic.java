@@ -60,7 +60,9 @@ public final class InputLogic {
         ENCRYPT,
         DECRYPT,
         SIGN,
-        VERIFY
+        VERIFY,
+        OFFER_HANDSHAKE,
+        ACCEPT_HANDSHAKE
     }
 
     /**
@@ -271,6 +273,12 @@ public final class InputLogic {
                     mLatinIME.showPopup("Crypto error: " + e.getMessage());
                 }
                 break;
+            case Constants.CODE_OFFER_HANDSHAKE:
+                handleCryptoTransformation(CryptoType.OFFER_HANDSHAKE);
+                break;
+            case Constants.CODE_ACCEPT_HANDSHAKE:
+                handleCryptoTransformation(CryptoType.ACCEPT_HANDSHAKE);
+                break;
             default:
                 throw new RuntimeException("Unknown key code : " + event.mKeyCode);
         }
@@ -342,6 +350,25 @@ public final class InputLogic {
                     if (clipboardText != null) {
                         String resultText = Scrambler.ScramblerMainActivity.processText(context, clipboardText, cryptoType, selectedContact);
                         mLatinIME.showPopup(resultText);
+                    }
+                } else if (cryptoType == CryptoType.OFFER_HANDSHAKE) {
+                    String handshakePayload = Scrambler.ScramblerMainActivity.processText(context, null, cryptoType, selectedContact);
+                    if (handshakePayload != null) {
+                        mConnection.commitText(handshakePayload, 1);
+                    } else {
+                        mLatinIME.showPopup("Failed to generate handshake offer");
+                    }
+                    // After crypto operation, switch back to alphanumeric keyboard and hide contact name view
+                    mLatinIME.switchToAlphaKeyboard();
+                } else if (cryptoType == CryptoType.ACCEPT_HANDSHAKE) {
+                    String handshakePayload = getClipboardText();
+                    if (handshakePayload != null) {
+                        String result = Scrambler.ScramblerMainActivity.processText(context, handshakePayload, cryptoType, selectedContact);
+                        if ("True".equals(result)) {
+                            mLatinIME.showPopup("Handshake accepted successfully");
+                        } else {
+                            mLatinIME.showPopup("Failed to accept handshake");
+                        }
                     }
                 }
             }

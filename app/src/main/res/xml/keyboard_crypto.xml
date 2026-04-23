@@ -27,6 +27,16 @@
             latin:keySpec="!text/keylabel_contact|!code/key_contact"
       />
     </Row>
+      <Row>
+         <Key
+            latin:keyWidth="50%p"
+            latin:keySpec="!text/keylabel_offer_handshake|!code/key_offer_handshake"
+      />
+         <Key
+            latin:keyWidth="50%p"
+            latin:keySpec="!text/keylabel_accept_handshake|!code/key_accept_handshake"
+      />
+    </Row>
     <Row>
          <Key
             latin:keyWidth="100%p"

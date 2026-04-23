@@ -238,7 +238,9 @@ public final class KeyboardTextsTable {
         /* 170: 0 */ "keylabel_verify",
         /* 171: 0 */ "keylabel_crypto",
         /* 172: 0 */ "keylabel_abc",
-        /* 173: 0 */ "keylabel_contact"
+        /* 173: 0 */ "keylabel_contact",
+        /* 174: 0 */ "keylabel_offer_handshake",
+        /* 175: 0 */ "keylabel_accept_handshake"
     };
 
     private static final String EMPTY = "";
@@ -459,6 +461,8 @@ public final class KeyboardTextsTable {
         /* keylabel_crypto */ "Crypto",
         /* keylabel_abc */ "ABC",
         /* keylabel_contact */ "Choose Contact",
+        /* keylabel_offer_handshake */ "Offer Handshake",
+        /* keylabel_accept_handshake */ "Accept Handshake",
     };
 
     /* Locale af: Afrikaans */
