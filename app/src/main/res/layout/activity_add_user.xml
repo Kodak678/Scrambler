@@ -46,8 +46,6 @@
             android:layout_marginTop="8dp"
             android:layout_marginBottom="8dp" />
 
-
-
         <!-- Handshake Payload Output Area (Uneditable, Selectable) -->
         <TextView
             android:id="@+id/handshake_payload_output"
@@ -59,15 +57,41 @@
             android:padding="8dp"
             android:gravity="top|start"
             android:scrollbars="vertical"
-            android:hint="Generated public key will appear here"
+            android:hint="Your generated public key will appear here"
             android:layout_marginTop="8dp"
             android:layout_marginBottom="16dp" />
+        
+        <Button
+            android:id="@+id/copy_key_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Copy your Public Key to clipboard"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp" />
+
+        <!-- Seeing output of QR code generator-->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Your public key (for sharing) as a QR code:"
+            android:textStyle="bold" />
+
+
+        <ImageView
+            android:id="@+id/ivQRCode"
+            android:layout_width="400dp"
+            android:layout_height="400dp"
+            android:layout_gravity="center"
+            android:layout_marginTop="10dp"
+            android:scaleType="fitCenter" />
+
+
 
         <!-- Encryption Key Display/Input -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Encryption Public Key"
+            android:text="Paste or scan contact encryption Public Key"
             android:textStyle="bold"
             android:layout_marginTop="8dp" />
 
@@ -75,12 +99,53 @@
             android:id="@+id/encryption_key_input"
             android:layout_width="match_parent"
             android:layout_height="120dp"
-            android:hint="Paste encryption public key here"
+            android:hint="Paste contact encryption public key here"
             android:inputType="textMultiLine"
             android:gravity="top"
             android:scrollbars="vertical"
             android:layout_marginTop="8dp"
             android:layout_marginBottom="16dp" />
+
+         <!-- Camera scanning  -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Scanning camera feed for Contact Key QR Codes:"
+            android:textStyle="bold" />
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="250dp"
+            android:layout_marginTop="8dp">
+
+            <androidx.camera.view.PreviewView
+                android:id="@+id/previewView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@android:color/darker_gray" />
+
+            <View
+                android:id="@+id/camera_placeholder"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@android:color/darker_gray"
+                android:visibility="visible" />
+        </FrameLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="2dp"
+            android:layout_marginVertical="20dp"
+            android:background="@android:color/darker_gray" />
+        
+        <Button
+            android:id="@+id/scan_public_key_qr_code_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Scan Public Key QR Code"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp" />
+
 
         <!-- Signing Key Input -->
         <TextView
@@ -94,12 +159,20 @@
             android:id="@+id/signing_key_input"
             android:layout_width="match_parent"
             android:layout_height="120dp"
-            android:hint="Paste signing public key here (optional)"
+            android:hint="Paste contact signing public key here (optional)"
             android:inputType="textMultiLine"
             android:gravity="top"
             android:scrollbars="vertical"
             android:layout_marginTop="8dp"
             android:layout_marginBottom="16dp" />
+        
+        <Button
+            android:id="@+id/scan_signing_key_qr_code_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Scan Signing Key QR Code"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp" />
 
         <!-- Save Button -->
         <Button

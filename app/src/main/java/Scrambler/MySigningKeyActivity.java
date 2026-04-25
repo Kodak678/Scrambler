@@ -1,10 +1,13 @@
 package Scrambler;
 
 import android.app.AlertDialog;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -22,6 +25,8 @@ import rkr.simplekeyboard.inputmethod.R;
 public class MySigningKeyActivity extends AppCompatActivity {
     private TextView signingKeyTextView;
     private Button generateKeyButton;
+    private ImageView ivQRCode;
+    private Button copyPublicKeyButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,14 +41,19 @@ public class MySigningKeyActivity extends AppCompatActivity {
 
         signingKeyTextView = findViewById(R.id.signing_key_textview);
         generateKeyButton = findViewById(R.id.generate_signing_key_button);
-
+        ivQRCode = findViewById(R.id.ivQRCode);
+        copyPublicKeyButton = findViewById(R.id.copy_key_button);
         loadSigningKey();
+        generateKeyButton.setOnClickListener(v -> showRegenerateKeyDialog());
 
-        generateKeyButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showRegenerateKeyDialog();
-            }
+        // New copy button listener to copy the fetched public signing key to clipboard
+        // Note this technically only copies the text in the signing key area
+        // Which can be empty
+        copyPublicKeyButton.setOnClickListener(v -> {
+            ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+            ClipData clip = ClipData.newPlainText("plain_text", signingKeyTextView.getText());
+            clipboard.setPrimaryClip(clip);
+            Toast.makeText(this, "Public signing key copied to clipboard", Toast.LENGTH_SHORT).show();
         });
     }
 
@@ -52,6 +62,11 @@ public class MySigningKeyActivity extends AppCompatActivity {
             ScramblerTinkKeyManager keyManager = new ScramblerTinkKeyManager(getApplicationContext());
             String publicKey = keyManager.getIdentitySigningPublicKey();
             signingKeyTextView.setText(publicKey);
+
+            // Generate QR code from signing key and display it
+            Bitmap bitmap = QRCodeHelper.generateQRCode(publicKey, 500);
+            ivQRCode.setImageBitmap(bitmap);
+
         } catch (GeneralSecurityException | IOException e) {
             signingKeyTextView.setText("Error loading signing key: " + e.getMessage());
         }

@@ -1,14 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:id="@+id/main"
     tools:context="Scrambler.MySigningKeyActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Your public signing key (for sharing):"
+        android:textStyle="bold" />
 
     <TextView
         android:id="@+id/signing_key_textview"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="top|start"
         android:text="Your public signing key will appear here"
@@ -16,21 +29,38 @@
         android:background="@android:color/transparent"
         android:padding="16dp"
         android:textSize="20sp"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toTopOf="@+id/generate_signing_key_button"
-        app:layout_constraintHeight_min="120dp"
-        app:layout_constraintVertical_chainStyle="packed"/>
+        android:minHeight="120dp"/>
+    
+    <Button
+        android:id="@+id/copy_key_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Copy your Public Signing Key to clipboard"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp" />
+
+
+    <!-- Seeing output of QR code generator-->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Your public signing key (for sharing) as a QR code:"
+        android:textStyle="bold" />
+
+
+    <ImageView
+        android:id="@+id/ivQRCode"
+        android:layout_width="400dp"
+        android:layout_height="400dp"
+        android:layout_gravity="center"
+        android:layout_marginTop="10dp"
+        android:scaleType="fitCenter" />
 
     <Button
         android:id="@+id/generate_signing_key_button"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Generate new public signing key"
-        app:layout_constraintTop_toBottomOf="@id/signing_key_textview"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"/>
+        android:text="Generate new public signing key"/>
+    </LinearLayout>
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+</ScrollView>

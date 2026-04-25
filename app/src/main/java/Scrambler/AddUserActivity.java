@@ -1,5 +1,8 @@
 package Scrambler;
 
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -15,18 +18,49 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import rkr.simplekeyboard.inputmethod.R;
-import rkr.simplekeyboard.inputmethod.compat.PreferenceManagerCompat;
-import rkr.simplekeyboard.inputmethod.latin.settings.Settings;
+
+import android.Manifest;
+import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.util.Size;
+import android.widget.ImageView;
+
+import androidx.annotation.NonNull;
+import androidx.camera.core.CameraSelector;
+import androidx.camera.core.ImageAnalysis;
+import androidx.camera.core.Preview;
+import androidx.camera.lifecycle.ProcessCameraProvider;
+import androidx.camera.view.PreviewView;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+
+import com.google.common.util.concurrent.ListenableFuture;
+
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class AddUserActivity extends AppCompatActivity {
     private static final String TAG = "AddUserActivity";
+    private static final int REQUEST_CAMERA_PERMISSION = 100;
 
     private EditText contactNameEditText;
     private Button generateKeyButton;
+    private Button scanPublicKeyQrCodeButton;
+    private Button scanSigningKeyQrCodeButton;
     private EditText encryptionKeyEditText;
     private EditText signingKeyEditText;
     private Button saveButton;
     private android.widget.TextView handshakePayloadOutput;
+
+    private PreviewView previewView;
+    private android.view.View cameraPlaceholder;
+    private ImageView ivQRCode;
+    private ExecutorService cameraExecutor;
+    private ProcessCameraProvider cameraProvider;
+    private Button copyPublicKeyButton;
+    private enum ScanMode { NONE, PUBLIC_KEY, SIGNING_KEY }
+    private ScanMode currentMode = ScanMode.NONE;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,6 +84,13 @@ public class AddUserActivity extends AppCompatActivity {
         signingKeyEditText = findViewById(R.id.signing_key_input);
         saveButton = findViewById(R.id.save_button);
         handshakePayloadOutput = findViewById(R.id.handshake_payload_output);
+        ivQRCode = findViewById(R.id.ivQRCode);
+        cameraExecutor = Executors.newSingleThreadExecutor();
+        scanPublicKeyQrCodeButton = findViewById(R.id.scan_public_key_qr_code_button);
+        scanSigningKeyQrCodeButton = findViewById(R.id.scan_signing_key_qr_code_button);
+        previewView = findViewById(R.id.previewView);
+        cameraPlaceholder = findViewById(R.id.camera_placeholder);
+        copyPublicKeyButton = findViewById(R.id.copy_key_button);
 
         // Initially disable action buttons until name is provided
         updateButtonEnablement();
@@ -70,6 +111,18 @@ public class AddUserActivity extends AppCompatActivity {
 
         generateKeyButton.setOnClickListener(v -> onGenerateKeyClick());
         saveButton.setOnClickListener(v -> onSaveClick());
+        scanPublicKeyQrCodeButton.setOnClickListener(v -> {currentMode = ScanMode.PUBLIC_KEY; onScanQrCodeClick();});
+        scanSigningKeyQrCodeButton.setOnClickListener(v -> {currentMode = ScanMode.SIGNING_KEY; onScanQrCodeClick();});
+
+        // New copy button listener to copy the generated public key to clipboard
+        // Note this technically only copies the text in the handshake payload ouput area 
+        // Which can be empty
+        copyPublicKeyButton.setOnClickListener(v -> {
+            ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+            ClipData clip = ClipData.newPlainText("plain_text", handshakePayloadOutput.getText());
+            clipboard.setPrimaryClip(clip);
+            Toast.makeText(this, "Public key copied to clipboard", Toast.LENGTH_SHORT).show();
+        });
     }
 
     @Override
@@ -125,6 +178,11 @@ public class AddUserActivity extends AppCompatActivity {
             final String handshakePayload = new ScramblerTinkKeyManager(this)
                     .offerHandshake(contactName);
             handshakePayloadOutput.setText(handshakePayload);
+
+            // Generate QR code from handshake payload and display it
+            Bitmap bitmap = QRCodeHelper.generateQRCode(handshakePayload, 500);
+            ivQRCode.setImageBitmap(bitmap);
+
             // Lock the contact name field after successful key generation
             contactNameEditText.setEnabled(false);
             Toast.makeText(this, "Encryption public key generated.", Toast.LENGTH_SHORT).show();
@@ -178,4 +236,91 @@ public class AddUserActivity extends AppCompatActivity {
         }
     }
 
+    // Check for camera permission and ask for it before starting camera
+    private void onScanQrCodeClick() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, REQUEST_CAMERA_PERMISSION);
+        } else {
+            startCamera();
+        }
+    }
+
+    // Handle the result of camera permission request, essentially overriding the
+    // above ActivityCompat.requestPermissions callback to start camera if permission is granted
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+            @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == REQUEST_CAMERA_PERMISSION) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                startCamera();
+            } else {
+                Toast.makeText(this, "Camera permission is required to scan QR codes.", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    private void stopCamera() {
+        if (cameraProvider != null) {
+            cameraProvider.unbindAll();
+        }
+        // Show the placeholder again after stopping camera
+        // this is so the last frame of the camera doesn't just freeze on the screen after scanning, 
+        // which can be confusing to users
+        cameraPlaceholder.setVisibility(android.view.View.VISIBLE);
+    }
+
+    // When the ML Kit barcode scanner finds a QR code, this function is called with the result. 
+    // It sets the paste encryption key field with the scanned encryption key and stops the camera.
+    private void handleQrCodeFound(String result) {
+        runOnUiThread(() -> {
+            if (currentMode == ScanMode.PUBLIC_KEY) {
+                encryptionKeyEditText.setText(result);
+            } else if (currentMode == ScanMode.SIGNING_KEY) {
+                signingKeyEditText.setText(result);
+            }
+            stopCamera();
+            Toast.makeText(this, "QR code scanned.", Toast.LENGTH_SHORT).show();
+        });
+    }
+
+    private void startCamera() {
+        cameraPlaceholder.setVisibility(android.view.View.GONE);
+
+        ListenableFuture<ProcessCameraProvider> cameraProviderFuture = 
+                ProcessCameraProvider.getInstance(this);
+
+        cameraProviderFuture.addListener(() -> {
+            try {
+                cameraProvider = cameraProviderFuture.get();
+
+                // Preview setup
+                Preview preview = new Preview.Builder().build();
+                preview.setSurfaceProvider(previewView.getSurfaceProvider());
+
+                // Analysis setup (Linking ML Kit)
+                ImageAnalysis imageAnalysis = new ImageAnalysis.Builder()
+                        .setTargetResolution(new Size(1280, 720))
+                        .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                        .build();
+
+                // Use QRAnalyzer which uses ML Kit to analyze camera frames for QR codes
+                imageAnalysis.setAnalyzer(cameraExecutor, new QRAnalyzer(result -> {
+                    handleQrCodeFound(result);
+                }));
+
+                // unbind any existing use cases before rebinding
+                cameraProvider.unbindAll();
+                cameraProvider.bindToLifecycle(this, CameraSelector.DEFAULT_BACK_CAMERA, 
+                        preview, imageAnalysis);
+
+            } catch (ExecutionException | InterruptedException e) {
+                //something goes wrong during camera initialization
+                // Show the placeholder again if camera fails to start, so user isn't left with a blank screen
+                cameraPlaceholder.setVisibility(android.view.View.VISIBLE);
+                e.printStackTrace();
+            }
+        }, ContextCompat.getMainExecutor(this));
+    }
 }
