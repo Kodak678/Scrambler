@@ -23,7 +23,11 @@
     </Row>
     <Row>
          <Key
-            latin:keyWidth="100%p"
+            latin:keyWidth="50%p"
+            latin:keySpec="!text/keylabel_classify_encrypt|!code/key_classify_encrypt"
+      />
+         <Key
+            latin:keyWidth="50%p"
             latin:keySpec="!text/keylabel_contact|!code/key_contact"
       />
     </Row>

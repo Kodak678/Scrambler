@@ -62,7 +62,8 @@ public final class KeyboardCodesSet {
         /* key_abc */ "key_abc",
         /* key_contact */ "key_contact",
         /* key_offer_handshake */ "key_offer_handshake",
-        /* key_accept_handshake */ "key_accept_handshake"
+        /* key_accept_handshake */ "key_accept_handshake",
+        /* key_classify_encrypt */ "key_classify_encrypt"
     };
 
     private static final int[] DEFAULT = {
@@ -90,7 +91,8 @@ public final class KeyboardCodesSet {
         /* key_abc */ Constants.CODE_ABC,
         /* key_contact */ Constants.CODE_CONTACT,
         /* key_offer_handshake */ Constants.CODE_OFFER_HANDSHAKE,
-        /* key_accept_handshake */ Constants.CODE_ACCEPT_HANDSHAKE
+        /* key_accept_handshake */ Constants.CODE_ACCEPT_HANDSHAKE,
+        /* key_classify_encrypt */ Constants.CODE_CLASSIFY_ENCRYPT
     };
 
     static {

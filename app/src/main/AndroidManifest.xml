@@ -32,7 +32,7 @@
             android:name=".latin.LatinIME"
             android:directBootAware="true"
             android:exported="false"
-            android:label="@string/english_ime_name"
+            android:label="@string/english_scrambler_name"
             android:permission="android.permission.BIND_INPUT_METHOD">
             <intent-filter>
                 <action android:name="android.view.InputMethod" />
@@ -46,7 +46,7 @@
         <activity
             android:name=".latin.settings.SettingsActivity"
             android:exported="true"
-            android:label="@string/english_ime_name"
+            android:label="@string/english_scrambler_name"
             android:theme="@style/platformSettingsTheme"
             android:parentActivityName="Scrambler.ScramblerMainActivity">
             <meta-data

@@ -62,7 +62,8 @@ public final class InputLogic {
         SIGN,
         VERIFY,
         OFFER_HANDSHAKE,
-        ACCEPT_HANDSHAKE
+        ACCEPT_HANDSHAKE,
+        CLASSIFY_ENCRYPT
     }
 
     /**
@@ -279,6 +280,9 @@ public final class InputLogic {
             case Constants.CODE_ACCEPT_HANDSHAKE:
                 handleCryptoTransformation(CryptoType.ACCEPT_HANDSHAKE);
                 break;
+            case Constants.CODE_CLASSIFY_ENCRYPT:
+                handleCryptoTransformation(CryptoType.CLASSIFY_ENCRYPT);
+                break;
             default:
                 throw new RuntimeException("Unknown key code : " + event.mKeyCode);
         }
@@ -370,6 +374,22 @@ public final class InputLogic {
                             mLatinIME.showPopup("Failed to accept handshake");
                         }
                     }
+                } else if (cryptoType == CryptoType.CLASSIFY_ENCRYPT) {
+                    // Reload the text cache to ensure we have the latest text from the editor.
+                    mConnection.reloadTextCache();
+
+                    String currentText;
+                    if (mConnection.hasSelection()) {
+                        currentText = mConnection.getSelectedText().toString();
+                    } else {
+                        // making use of the new public accessor instead of touching private fields.
+                        currentText = mConnection.getTextBeforeCursorCached();
+                    }
+
+                    boolean shouldEncrypt = Scrambler.ScramblerMainActivity.shouldEncryptText(context, currentText);
+                    String toastMsg = shouldEncrypt ? "Scrambler recommends encrypting this" : "Not necessary to encrypt";
+                    android.os.Handler handler = new android.os.Handler(android.os.Looper.getMainLooper());
+                    handler.post(() -> android.widget.Toast.makeText(context, toastMsg, android.widget.Toast.LENGTH_SHORT).show());
                 }
             }
 

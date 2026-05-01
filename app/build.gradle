@@ -1,10 +1,15 @@
 apply plugin: 'com.android.application'
 
 android {
+    aaptOptions {
+        noCompress 'tflite', 'json'
+    }
+
+    compileSdk 36
+
     defaultConfig {
         applicationId "rkr.simplekeyboard.inputmethod"
-        compileSdk 36
-        minSdkVersion 23
+        minSdkVersion 26
         targetSdkVersion 36
         versionCode 137
         versionName "5.41"
@@ -38,4 +43,6 @@ implementation 'androidx.appcompat:appcompat:1.7.1'
     implementation "androidx.camera:camera-view:1.3.1"
     implementation 'androidx.camera:camera-core:1.6.0'
     implementation "com.google.guava:guava:31.1-android"
+    implementation 'ai.djl.huggingface:tokenizers:0.23.0'
+    implementation 'org.tensorflow:tensorflow-lite:2.16.1'
 }
