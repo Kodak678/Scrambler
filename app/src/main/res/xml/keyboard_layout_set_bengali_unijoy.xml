@@ -49,4 +49,7 @@
     <Element
         latin:elementKeyboard="@xml/kbd_number"
         latin:elementName="number" />
-</KeyboardLayoutSet>
+        <Element
+            latin:elementName="crypto"
+            latin:elementKeyboard="@xml/keyboard_crypto" />
+    </KeyboardLayoutSet>

@@ -38,4 +38,7 @@
     <Element
         latin:elementName="number"
         latin:elementKeyboard="@xml/kbd_number" />
+    <Element
+        latin:elementName="crypto"
+        latin:elementKeyboard="@xml/keyboard_crypto" />
 </KeyboardLayoutSet>
