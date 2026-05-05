@@ -68,10 +68,10 @@ If you want to deploy the model on Android devices, use TensorFlow 2.16.1 and tr
   3. Press the "choose contact" key to open the contact selection dropdown.
 
 #### Opening the keyboard: <br/>
-![Opening the keyboard](images\whereIsKeyboard.png)
+![Opening the keyboard](images/whereIsKeyboard.png)
 <br/>
 #### Selecting a contact:   <br/>
-![Use case 1](images\contactSelection.png)
+![Use case 1](images/contactSelection.png)
 
 ### 2. Encrypting a message
 
@@ -83,7 +83,7 @@ If you want to deploy the model on Android devices, use TensorFlow 2.16.1 and tr
   3. Press the "encrypt" key to encrypt the last 1024 characters of the text input field using the selected contact's public key.
   4. OR select a portion of the text input field and press the "encrypt" key to encrypt the selected text using the selected contact's public key.
 
-![Encrypting a message](images\EncryptionFlow.png)
+![Encrypting a message](images/EncryptionFlow.png)
 
 ### 3. Decrypting a message
 
@@ -95,7 +95,7 @@ If you want to deploy the model on Android devices, use TensorFlow 2.16.1 and tr
   3. Select a portion of the text and copy it to the clipboard.
   4. Press the "decrypt" key to decrypt the copied text using your private key and the decrypted message will be displayed in a popup.
 
-![Decrypting a message](images\DecryptionFlow.png)
+![Decrypting a message](images/DecryptionFlow.png)
 
 ### 4. Signing a message
 
@@ -107,7 +107,7 @@ If you want to deploy the model on Android devices, use TensorFlow 2.16.1 and tr
   3. Press the "sign" key to sign the last 1024 characters of the text input field using your private key.
   4. OR select a portion of the text input field and press the "sign" key to sign the selected text using your private signing key.
 
-![Signing a message](images\SigningFlow.png)
+![Signing a message](images/SigningFlow.png)
 
 ### 5. Verifying a signed message
 
@@ -119,7 +119,7 @@ If you want to deploy the model on Android devices, use TensorFlow 2.16.1 and tr
   3. Select a portion of the text and copy it to the clipboard.
   4. Press the "verify" key to verify the signature of the copied text using the sender's public key and the verification result will be displayed in a popup.
 
-![Verifying a signed message](images\VerificationFlow.png)
+![Verifying a signed message](images/VerificationFlow.png)
 
 ### 6. Offering a handshake
 
@@ -130,7 +130,7 @@ If you want to deploy the model on Android devices, use TensorFlow 2.16.1 and tr
   2. Hold down the "," comma key to open the cryptographic operations keyboard.
   3. Press the "offer handshake" key to paste a handshake payload message containing a public key into the text input field. The recipient can then copy this handshake payload message to accept the handshake and use your public key for future encryption.
 
-![Offering a handshake](images\HandshakeFlow.png)
+![Offering a handshake](images/HandshakeFlow.png)
 
 ### 7. Accepting a handshake
 
@@ -142,7 +142,7 @@ If you want to deploy the model on Android devices, use TensorFlow 2.16.1 and tr
   3. Select the handshake payload message and copy it to the clipboard.
   4. Press the "accept handshake" key to accept the handshake and use the sender's public key for future encryption.
 
-![Accepting a handshake](images\AcceptHandshakeFlow.png)
+![Accepting a handshake](images/AcceptHandshakeFlow.png)
 
 ### 8. Classify message sensitivity
 
@@ -157,7 +157,7 @@ If you want to deploy the model on Android devices, use TensorFlow 2.16.1 and tr
   3. Press the "Should I encrypt?" key to classify the sensitivity of the last 1024 characters of the text input field using a fine-tuned DistilBERT model.
   4. OR select a portion of the text input field and press the "classify sensitivity" key to classify the sensitivity of the selected text using a fine-tuned DistilBERT model. The sensitivity classification result will be outputted in a toast notification.
 
-![Classifying message sensitivity](images\ClassificationFlow.png)
+![Classifying message sensitivity](images/ClassificationFlow.png)
 
 ### 9. Viewing all contacts
 
@@ -165,7 +165,7 @@ If you want to deploy the model on Android devices, use TensorFlow 2.16.1 and tr
 
 - Open the Scrambler main app to view all your contacts and their associated public keys. You can also manage your contacts by adding new ones, editing existing ones, or deleting existing ones from this screen.
 
-![Viewing all contacts](images\ScramblerMainActivity.png)
+![Viewing all contacts](images/ScramblerMainActivity.png)
 
 ### 10. Adding a new contact
 
@@ -178,7 +178,7 @@ If you want to deploy the model on Android devices, use TensorFlow 2.16.1 and tr
   4. Valid contact name consists of only letters a-z (case-insensitive) and digits 0-9.
   5. Pressing the "GENERATE NEW KEY PAIR" button will automatically generate a new public/private key pair for the contact and fill in the public key field with the generated public key. 
 
-![Adding a new contact](images\AddUserActivity.png)
+![Adding a new contact](images/AddUserActivity.png)
 
 ### 11. Editing an existing contact
 
@@ -190,7 +190,7 @@ If you want to deploy the model on Android devices, use TensorFlow 2.16.1 and tr
   3. Press the edit icon to open the edit contact screen.
   4. Modify the contact's public key and/or signing key in the respective fields and press the "save" button to save the changes.
 
-![Editing an existing contact](images\EditUserActivity.png)
+![Editing an existing contact](images/EditUserActivity.png)
 
 ### 12. Viewing your own signing key
 
@@ -200,7 +200,7 @@ If you want to deploy the model on Android devices, use TensorFlow 2.16.1 and tr
   1. Open the Scrambler main app to view all your contacts.
   2. Press the "What's my signing key?" button to view your own signing key.
 
-![Viewing your own signing key](images\WhatsMySingingkey.png)
+![Viewing your own signing key](images/WhatsMySingingkey.png)
 
 
 ## Credits
